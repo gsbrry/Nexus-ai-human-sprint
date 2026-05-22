@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* YALLO dark theme — semantic tokens mapped to design tokens */
+    /* #111111 background */
+    --background: 0 0% 6.7%;
+    --foreground: 0 0% 100%;
+
+    /* #1F1F1F card */
+    --card: 0 0% 12.2%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 12.2%;
+    --popover-foreground: 0 0% 100%;
+
+    /* #D4A843 gold accent */
+    --primary: 42 64% 55%;
+    --primary-foreground: 0 0% 6.7%;
+
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* #AAAAAA muted */
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 67%;
+
+    --accent: 42 78% 67%;
+    --accent-foreground: 0 0% 6.7%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* #2A2A2A border */
+    --border: 0 0% 16.5%;
+    --input: 0 0% 16.5%;
+    --ring: 42 64% 55%;
+
+    --chart-1: 42 64% 55%;
+    --chart-2: 42 78% 67%;
+    --chart-3: 200 60% 55%;
+    --chart-4: 280 50% 60%;
+    --chart-5: 0 72% 60%;
+
+    --radius: 0.625rem;
+
+    --sidebar-background: 0 0% 6.7%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 42 64% 55%;
+    --sidebar-primary-foreground: 0 0% 6.7%;
+    --sidebar-accent: 0 0% 12.2%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 16.5%;
+    --sidebar-ring: 42 64% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-jakarta), 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+  code, pre, kbd, samp {
+    font-family: var(--font-dm-mono), 'DM Mono', ui-monospace, monospace;
+  }
+}

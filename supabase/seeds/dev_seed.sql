@@ -1,0 +1,4 @@
+-- dev_seed.sql
+-- YALLO AI Academy seed data for the development database.
+-- Populated in Sprint 1 Day 3 by @David after RLS tests pass.
+-- Intentionally empty for now — see /artifacts/nexus-war-room.html for source data.
