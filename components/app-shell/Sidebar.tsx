@@ -75,8 +75,8 @@ export function Sidebar({ role }: { role?: 'member' | 'scrum_master' | 'org_admi
       </div>
       <NavList role={role} />
       <div className="px-5 py-4 border-t border-border">
-        <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#555]">Sprint 2</div>
-        <div className="text-xs text-muted-foreground mt-1">Auth + core screens</div>
+        <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#555]">Sprint 4</div>
+        <div className="text-xs text-muted-foreground mt-1">Tasks, backlog & burndown</div>
       </div>
     </aside>
   );
