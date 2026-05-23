@@ -49,8 +49,9 @@ export function TaskList({
 
   return (
     <>
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="grid grid-cols-[100px_1fr_120px_90px_90px_80px] gap-3 px-4 py-2.5 bg-[#0A0A0A] border-b border-border font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+      {/* Desktop table */}
+      <div className="hidden md:block rounded-xl border border-border bg-card overflow-hidden">
+        <div className="grid grid-cols-[100px_1fr_140px_110px_70px_80px] gap-3 px-4 py-2.5 bg-[#0A0A0A] border-b border-border font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
           <div>Task</div>
           <div>Title</div>
           <div>Assignee</div>
@@ -64,7 +65,7 @@ export function TaskList({
             <button
               key={t.id}
               onClick={() => openTask(t)}
-              className="w-full text-left grid grid-cols-[100px_1fr_120px_90px_90px_80px] gap-3 px-4 py-3 border-b border-border last:border-b-0 hover:bg-white/[0.02] transition-colors items-center"
+              className="w-full text-left grid grid-cols-[100px_1fr_140px_110px_70px_80px] gap-3 px-4 py-3 border-b border-border last:border-b-0 hover:bg-white/[0.02] transition-colors items-center"
             >
               <div className="font-mono text-[11px] font-semibold text-gold">{t.task_key}</div>
               <div className="flex items-center gap-2 min-w-0">
@@ -104,6 +105,14 @@ export function TaskList({
           );
         })}
       </div>
+
+      {/* Mobile stacked rows */}
+      <div className="md:hidden space-y-2">
+        {tasks.map((t) => (
+          <TaskCard key={t.id} task={t} onClick={() => openTask(t)} />
+        ))}
+      </div>
+
       <TaskDetailSheet task={active} open={open} onOpenChange={setOpen} />
     </>
   );
@@ -115,10 +124,10 @@ function TaskCard({ task, onClick }: { task: MockTask; onClick: () => void }) {
     <button
       onClick={onClick}
       className={cn(
-        'group text-left rounded-xl border border-border bg-card hover:bg-[#222] hover:border-gold/30 transition-colors p-4 space-y-3'
+        'group w-full text-left rounded-xl border border-border bg-card hover:bg-[#222] hover:border-gold/30 transition-colors p-4 space-y-3'
       )}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <PriorityDot priority={task.priority} />
         <span className="font-mono text-[10px] font-semibold text-gold">{task.task_key}</span>
         {task.is_blocked && (

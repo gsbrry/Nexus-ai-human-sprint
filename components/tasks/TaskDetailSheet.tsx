@@ -1,6 +1,6 @@
 'use client';
 import { format } from 'date-fns';
-import { AlertTriangle, Bot, Calendar, MessageSquare, User as UserIcon } from 'lucide-react';
+import { AlertTriangle, Bot, Calendar, User as UserIcon } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
 import { StatusBadge, PriorityDot } from '@/components/tasks/StatusBadge';
-import { mockUsers, projectById, userById, type MockTask } from '@/lib/mock/yallo';
+import { projectById, userById, type MockTask } from '@/lib/mock/yallo';
 import { cn } from '@/lib/utils';
 
 export function TaskDetailSheet({
@@ -28,11 +28,11 @@ export function TaskDetailSheet({
 }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="p-0 flex flex-col">
+      <SheetContent side="responsiveTaskPanel" className="p-0 flex flex-col">
         {task && (
           <>
-            <SheetHeader className="px-6 pt-6 pb-4 border-b border-border">
-              <div className="flex items-center gap-3">
+            <SheetHeader className="px-5 sm:px-6 pt-6 pb-4 border-b border-border">
+              <div className="flex items-center flex-wrap gap-2">
                 <PriorityDot priority={task.priority} />
                 <span className="font-mono text-[12px] font-semibold text-gold">{task.task_key}</span>
                 <Badge variant="outline" className="text-[9px]">
@@ -40,7 +40,7 @@ export function TaskDetailSheet({
                 </Badge>
                 <StatusBadge status={task.status} />
               </div>
-              <SheetTitle className="text-xl leading-tight pr-8">{task.title}</SheetTitle>
+              <SheetTitle className="text-lg sm:text-xl leading-tight pr-8">{task.title}</SheetTitle>
               {task.is_blocked && task.blocker_reason && (
                 <div className="mt-3 flex items-start gap-2 rounded-md border border-[#E24B4A]/30 bg-[#E24B4A]/10 px-3 py-2">
                   <AlertTriangle className="size-4 text-[#F09595] shrink-0 mt-0.5" />
@@ -55,8 +55,7 @@ export function TaskDetailSheet({
             </SheetHeader>
 
             <ScrollArea className="flex-1">
-              <div className="px-6 py-5 space-y-6">
-                {/* Detail grid */}
+              <div className="px-5 sm:px-6 py-5 space-y-6">
                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                   <Detail label="Assignee">
                     <OwnerLine userId={task.assignee_id} />
@@ -93,7 +92,6 @@ export function TaskDetailSheet({
 
                 <Separator />
 
-                {/* Comments with filter pills */}
                 <Comments task={task} />
               </div>
             </ScrollArea>
@@ -119,7 +117,7 @@ function OwnerLine({ userId }: { userId: string | null | undefined }) {
   return (
     <div className="flex items-center gap-2">
       <OwnerAvatar user={user} size={22} />
-      <span className="text-[13px]">{user.name}</span>
+      <span className="text-[13px] truncate">{user.name}</span>
     </div>
   );
 }
@@ -201,10 +199,3 @@ function CommentList({ items }: { items: MockTask['comments'] }) {
     </ul>
   );
 }
-
-/** Helper used by parents to look up a user by ID without importing the data layer. */
-export function useUsers() {
-  return mockUsers;
-}
-
-export { MessageSquare };
