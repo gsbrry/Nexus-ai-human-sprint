@@ -9,6 +9,7 @@ import {
   TrendingUp,
   Settings,
   Shield,
+  Upload,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/Logo';
@@ -17,10 +18,11 @@ const NAV = [
   { href: '/dashboard', label: 'Dashboard', code: '01', icon: LayoutDashboard },
   { href: '/projects', label: 'Projects', code: '02', icon: FolderKanban },
   { href: '/sprints', label: 'Sprints', code: '03', icon: Repeat },
-  { href: '/tasks', label: 'My tasks', code: '04', icon: ListChecks },
-  { href: '/velocity', label: 'Velocity', code: '05', icon: TrendingUp },
-  { href: '/settings', label: 'Settings', code: '06', icon: Settings },
-  { href: '/admin', label: 'Admin', code: '07', icon: Shield, role: 'super_admin' as const },
+  { href: '/import', label: 'Import', code: '04', icon: Upload },
+  { href: '/tasks', label: 'My tasks', code: '05', icon: ListChecks },
+  { href: '/velocity', label: 'Velocity', code: '06', icon: TrendingUp },
+  { href: '/settings', label: 'Settings', code: '07', icon: Settings },
+  { href: '/admin', label: 'Admin', code: '08', icon: Shield, role: 'super_admin' as const },
 ];
 
 export function NavList({
