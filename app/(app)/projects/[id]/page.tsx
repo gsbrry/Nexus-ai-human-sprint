@@ -59,6 +59,12 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             })}
           </div>
         </div>
+        <Link
+          href={`/projects/${project.key.toLowerCase()}/backlog`}
+          className="shrink-0 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-gold hover:text-gold-light border border-gold/30 rounded-md px-3 py-1.5 hover:bg-gold/10 transition-colors"
+        >
+          T-05 · Backlog →
+        </Link>
       </div>
 
       {/* Active sprint */}

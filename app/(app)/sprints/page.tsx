@@ -19,12 +19,21 @@ export default function SprintsPage() {
 
   return (
     <div className="max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8 space-y-6 md:space-y-8">
-      <div className="space-y-2">
-        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold">T-01 · Sprints</div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Sprints</h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
-          Every active and planned sprint across your projects.
-        </p>
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div className="space-y-2">
+          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold">T-01 · Sprints</div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Sprints</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Every active and planned sprint across your projects.
+          </p>
+        </div>
+        <Link
+          href="/sprints/backlog"
+          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground hover:text-gold hover:border-gold/30 transition-colors"
+        >
+          <ArrowUpRight className="size-3.5" />
+          T-05 · Global backlog
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
