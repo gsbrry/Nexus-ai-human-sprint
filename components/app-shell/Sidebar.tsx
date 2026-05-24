@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/Logo';
+import { usePreviewRole } from '@/components/app-shell/PreviewRoleProvider';
 
 const NAV = [
   { href: '/dashboard', label: 'Dashboard', code: '01', icon: LayoutDashboard },
@@ -26,13 +27,17 @@ const NAV = [
 ];
 
 export function NavList({
-  role,
+  role: roleProp,
   onItemClick,
 }: {
   role?: 'member' | 'scrum_master' | 'org_admin' | 'super_admin';
   onItemClick?: () => void;
 }) {
   const pathname = usePathname();
+  const preview = usePreviewRole();
+  // Preview role overrides the prop so the role switcher in the topbar instantly
+  // hides / reveals SA-only nav items.
+  const role = preview?.role ?? roleProp;
   return (
     <nav className="flex-1 px-3 py-4 space-y-1">
       {NAV.filter((item) => !item.role || item.role === role).map((item) => {

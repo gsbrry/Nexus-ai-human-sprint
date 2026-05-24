@@ -2,7 +2,7 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import { CURRENT_USER_ID, userById, type MockUser } from '@/lib/mock/yallo';
 
-type PreviewRole = 'member' | 'scrum_master' | 'org_admin';
+type PreviewRole = 'member' | 'scrum_master' | 'org_admin' | 'super_admin';
 
 type Ctx = {
   role: PreviewRole;
@@ -15,7 +15,9 @@ const PreviewRoleCtx = createContext<Ctx | null>(null);
 export function PreviewRoleProvider({ children }: { children: React.ReactNode }) {
   const me = userById(CURRENT_USER_ID)!;
   const initial: PreviewRole =
-    me.role === 'org_admin' || me.role === 'super_admin'
+    me.role === 'super_admin'
+      ? 'super_admin'
+      : me.role === 'org_admin'
       ? 'org_admin'
       : me.role === 'scrum_master'
       ? 'scrum_master'
