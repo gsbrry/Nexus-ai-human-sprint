@@ -21,6 +21,7 @@ import {
 import { Logo } from '@/components/brand/Logo';
 import { NavList } from '@/components/app-shell/Sidebar';
 import { RoleSwitch } from '@/components/app-shell/RoleSwitch';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 export function Topbar({
   title,
@@ -87,6 +88,7 @@ export function Topbar({
 
       <div className="flex items-center gap-3">
         {previewMode && <RoleSwitch />}
+        <NotificationBell />
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none focus:ring-2 focus:ring-ring rounded-full">
             <Avatar className="size-9">
