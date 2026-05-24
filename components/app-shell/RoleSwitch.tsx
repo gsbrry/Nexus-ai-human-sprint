@@ -2,10 +2,11 @@
 import { usePreviewRole } from '@/components/app-shell/PreviewRoleProvider';
 import { cn } from '@/lib/utils';
 
-const OPTIONS: { value: 'member' | 'scrum_master' | 'org_admin'; label: string }[] = [
+const OPTIONS: { value: 'member' | 'scrum_master' | 'org_admin' | 'super_admin'; label: string }[] = [
   { value: 'member', label: 'Member' },
   { value: 'scrum_master', label: 'SM' },
   { value: 'org_admin', label: 'Admin' },
+  { value: 'super_admin', label: 'SA' },
 ];
 
 export function RoleSwitch() {
