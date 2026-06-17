@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { GoogleButton } from '@/components/auth/GoogleButton';
+import { DemoLoginCard } from '@/components/auth/DemoLoginCard';
 import { Separator } from '@/components/ui/separator';
 
 export default function LoginPage() {
@@ -13,6 +14,8 @@ export default function LoginPage() {
           Sign in to continue your sprint.
         </p>
       </div>
+
+      <DemoLoginCard />
 
       <div className="rounded-xl border border-border bg-card p-7 space-y-5">
         <LoginForm />

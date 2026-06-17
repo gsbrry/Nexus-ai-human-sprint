@@ -12,9 +12,17 @@ type Ctx = {
 
 const PreviewRoleCtx = createContext<Ctx | null>(null);
 
-export function PreviewRoleProvider({ children }: { children: React.ReactNode }) {
-  const me = userById(CURRENT_USER_ID)!;
-  const initial: PreviewRole =
+export function PreviewRoleProvider({
+  children,
+  initialUserId,
+  initialRole,
+}: {
+  children: React.ReactNode;
+  initialUserId?: string;
+  initialRole?: PreviewRole;
+}) {
+  const me = userById(initialUserId ?? CURRENT_USER_ID) ?? userById(CURRENT_USER_ID)!;
+  const fallback: PreviewRole =
     me.role === 'super_admin'
       ? 'super_admin'
       : me.role === 'org_admin'
@@ -22,7 +30,7 @@ export function PreviewRoleProvider({ children }: { children: React.ReactNode })
       : me.role === 'scrum_master'
       ? 'scrum_master'
       : 'member';
-  const [role, setRole] = useState<PreviewRole>(initial);
+  const [role, setRole] = useState<PreviewRole>(initialRole ?? fallback);
   const value = useMemo(() => ({ role, setRole, user: me }), [role, me]);
   return <PreviewRoleCtx.Provider value={value}>{children}</PreviewRoleCtx.Provider>;
 }
