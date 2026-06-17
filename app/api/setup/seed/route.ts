@@ -34,7 +34,7 @@ export async function POST() {
 
   const admin = createServiceClient();
 
-  // 2. Short-circuit if user is already in an org.
+  // 2. Find or create org. If user already has one, use it; otherwise create "NEXUS Studio".
   const { data: existingMembership } = await admin
     .from('org_members')
     .select('org_id, organisations(id, slug, name)')
@@ -42,34 +42,45 @@ export async function POST() {
     .limit(1)
     .maybeSingle();
 
+  let orgId: string;
+  let orgInfo: { id: string; slug: string; name: string };
+
   if (existingMembership?.org_id) {
+    orgId = existingMembership.org_id;
+    orgInfo = existingMembership.organisations as unknown as { id: string; slug: string; name: string };
+  } else {
+    const { data: org, error: orgErr } = await admin
+      .from('organisations')
+      .insert({ slug: 'nexus', name: 'NEXUS Studio', created_by: user.id })
+      .select()
+      .single();
+    if (orgErr || !org) {
+      return NextResponse.json({ error: orgErr?.message ?? 'org insert failed' }, { status: 500 });
+    }
+    orgId = org.id;
+    orgInfo = { id: org.id, slug: org.slug, name: org.name };
+    await admin.from('org_members').insert({ org_id: orgId, user_id: user.id, role: 'org_admin' });
+  }
+
+  // 3. Promote profile to super_admin (idempotent).
+  await admin.from('profiles').update({ role: 'super_admin' }).eq('id', user.id);
+
+  // 4. Short-circuit if projects already exist in this org.
+  const { count: existingProjectCount } = await admin
+    .from('projects')
+    .select('*', { count: 'exact', head: true })
+    .eq('org_id', orgId)
+    .is('deleted_at', null);
+
+  if ((existingProjectCount ?? 0) > 0) {
     return NextResponse.json({
       already_seeded: true,
-      org: existingMembership.organisations,
+      org: orgInfo,
+      existing_projects: existingProjectCount,
     });
   }
 
-  // 3. Create organisation.
-  const { data: org, error: orgErr } = await admin
-    .from('organisations')
-    .insert({
-      slug: 'nexus',
-      name: 'NEXUS Studio',
-      created_by: user.id,
-    })
-    .select()
-    .single();
-  if (orgErr || !org) {
-    return NextResponse.json({ error: orgErr?.message ?? 'org insert failed' }, { status: 500 });
-  }
-
-  // 4. Promote profile to super_admin (so SA screens unlock) + add as org_admin.
-  await admin.from('profiles').update({ role: 'super_admin' }).eq('id', user.id);
-  await admin.from('org_members').insert({
-    org_id: org.id,
-    user_id: user.id,
-    role: 'org_admin',
-  });
+  const org = { id: orgId, slug: orgInfo.slug, name: orgInfo.name };
 
   // 5. Two projects.
   const projects = [
