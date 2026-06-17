@@ -11,7 +11,7 @@
 | `/login` (demo mode) | ✅ Mock | Pick any of 8 teammates, instant in |
 | `/dashboard` (demo) | ✅ Mock | Role-aware (Member/SM/Admin/SA) |
 | `/dashboard` (real Supabase auth) | ✅ Real | Detects missing migrations + empty workspace gracefully |
-| `/projects`, `/sprints`, `/tasks`, `/velocity` | ✅ Both | Auto-branches: demo cookie → mock, real session → Supabase |
+| `/projects`, `/projects/[id]`, `/sprints`, `/sprints/[id]`, `/sprints/backlog`, `/tasks`, `/velocity` | ✅ Both | Auto-branches: demo cookie → mock, real session → Supabase |
 | `/setup` wizard | ✅ Live | Detects which step you're on (env / auth / migrations / seed) and shows only that |
 | `/api/setup/seed` | ✅ Live | Idempotent — creates org + 2 projects + 2 sprints + 14 tasks for current user |
 | `/admin`, `/settings`, project/sprint **detail views** | ⏳ Mock only | Migration to real data deferred to next session |
@@ -53,13 +53,11 @@ If you ever want to go back to mock mode without losing your Supabase data:
 
 These will keep rendering mock data until I migrate them — deferred to the next session for scope reasons:
 
-- `/projects/[id]` — project detail (Kanban + task panel)
-- `/sprints/[id]` — sprint detail (Kanban + burndown)
-- `/sprints/backlog` — global backlog
-- `/tasks/[id]` — task detail
+- `/tasks/[id]` — task detail slide-in panel
 - `/settings` — all 5 tabs (Profile, Org, Members, API keys, Notifications)
 - `/admin` — SA-01/SA-02 (orgs list + platform metrics)
 - `/import` — CSV import wizard (writes to mocks, not real DB)
+- **Kanban drag-drop on real data** — `/sprints/[id]` Real view is read-only currently. Drag-drop status updates need a `/api/tasks/[id]/status` PATCH endpoint wired to Supabase.
 - `/api/auth/google` callback handling — works to redirect, but profile sync needs Supabase provider config first
 
 **The architecture is in place**: each of these can be migrated with the same `useRealData()` branching pattern used in Dashboard/Projects/Sprints/Tasks/Velocity. ~15 min per screen.
