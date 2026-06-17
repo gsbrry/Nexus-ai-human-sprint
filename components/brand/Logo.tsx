@@ -23,7 +23,7 @@ export function GoldStrip() {
     <div
       className="h-[3px] w-full"
       style={{
-        background: 'linear-gradient(90deg, #D4A843 0%, #F0C866 50%, transparent 100%)',
+        background: 'linear-gradient(90deg, #1a73e8 0%, #4a90e8 50%, transparent 100%)',
       }}
     />
   );

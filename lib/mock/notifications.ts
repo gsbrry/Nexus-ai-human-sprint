@@ -65,7 +65,7 @@ export const mockNotifications: MockNotification[] = [
     href: '/sprints/s-nex-2',
     actor_name: 'Layla Park',
     actor_initials: 'LK',
-    actor_color: '#F0C866',
+    actor_color: '#4a90e8',
     created_at: minutesAgo(48),
     read: false,
   },

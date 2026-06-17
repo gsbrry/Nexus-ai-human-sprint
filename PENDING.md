@@ -81,7 +81,7 @@ drop Supabase env vars, the next agent should:
 
 ### 4C. Manual sanity checks (you, eyeball)
 - [ ] YALLO dark theme (`#111`) is consistent across every page
-- [ ] Gold accent (`#D4A843`) and Plus Jakarta Sans + DM Mono fonts intact
+- [ ] Primary brand color (`#1a73e8` blue, was `#D4A843` gold) and Plus Jakarta Sans + DM Mono fonts intact
 - [ ] Role switcher (Member · SM · Admin in topbar preview mode) shows/hides correct nav items
 - [ ] Admin item only shows for `super_admin`
 

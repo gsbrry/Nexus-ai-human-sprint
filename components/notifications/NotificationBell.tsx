@@ -44,10 +44,10 @@ const FILTERS: { value: 'all' | MockNotifKind | 'mentions'; label: string }[] = 
 ];
 
 const KIND_META: Record<MockNotifKind, { icon: LucideIcon; color: string; label: string }> = {
-  mention: { icon: AtSign, color: '#D4A843', label: 'mention' },
+  mention: { icon: AtSign, color: '#1a73e8', label: 'mention' },
   ai: { icon: Sparkles, color: '#9C7DD6', label: 'ai' },
   system: { icon: Wand2, color: '#7DC8B8', label: 'system' },
-  assigned: { icon: UserPlus, color: '#F0C866', label: 'assigned' },
+  assigned: { icon: UserPlus, color: '#4a90e8', label: 'assigned' },
   blocker: { icon: CircleAlert, color: '#F09595', label: 'blocker' },
   sprint: { icon: Target, color: '#7AA7E0', label: 'sprint' },
 };

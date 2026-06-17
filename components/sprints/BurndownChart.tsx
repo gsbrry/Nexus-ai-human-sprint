@@ -52,8 +52,8 @@ export function BurndownChart({ data, height = 280 }: { data: BurndownPoint[]; h
       <ComposedChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
         <defs>
           <linearGradient id="burndown-gold" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#D4A843" stopOpacity={0.45} />
-            <stop offset="100%" stopColor="#D4A843" stopOpacity={0} />
+            <stop offset="0%" stopColor="#1a73e8" stopOpacity={0.45} />
+            <stop offset="100%" stopColor="#1a73e8" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid stroke="#2A2A2A" strokeDasharray="3 4" vertical={false} />
@@ -80,7 +80,7 @@ export function BurndownChart({ data, height = 280 }: { data: BurndownPoint[]; h
             fontFamily: 'DM Mono, ui-monospace',
             fontSize: 11,
           }}
-          labelStyle={{ color: '#D4A843', fontWeight: 700 }}
+          labelStyle={{ color: '#1a73e8', fontWeight: 700 }}
           itemStyle={{ color: '#FFFFFF' }}
         />
         <Line
@@ -96,10 +96,10 @@ export function BurndownChart({ data, height = 280 }: { data: BurndownPoint[]; h
         <Area
           type="monotone"
           dataKey="remaining"
-          stroke="#F0C866"
+          stroke="#4a90e8"
           strokeWidth={2.5}
           fill="url(#burndown-gold)"
-          dot={{ r: 3, fill: '#F0C866', stroke: 'none' }}
+          dot={{ r: 3, fill: '#4a90e8', stroke: 'none' }}
           connectNulls={false}
           name="Remaining"
         />

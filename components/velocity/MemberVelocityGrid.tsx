@@ -7,7 +7,7 @@ import { memberStats } from '@/lib/mock/velocity';
 import { cn } from '@/lib/utils';
 
 const COLOR_BY: Record<string, string> = {
-  gold: '#D4A843',
+  gold: '#1a73e8',
   blue: '#378ADD',
   teal: '#1D9E75',
   purple: '#7F77DD',
@@ -33,7 +33,7 @@ export function MemberVelocityGrid() {
         const ArrowIcon = arrow;
         const deltaTone =
           delta > 0 ? 'text-[#5BC498]' : delta < 0 ? 'text-[#F09595]' : 'text-muted-foreground';
-        const color = COLOR_BY[m.user.color] ?? '#D4A843';
+        const color = COLOR_BY[m.user.color] ?? '#1a73e8';
 
         return (
           <Card key={m.user.id} className="overflow-hidden">

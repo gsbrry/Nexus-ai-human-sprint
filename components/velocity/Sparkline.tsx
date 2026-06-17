@@ -7,7 +7,7 @@ import {
 
 export function Sparkline({
   data,
-  color = '#D4A843',
+  color = '#1a73e8',
   height = 36,
 }: {
   data: number[];

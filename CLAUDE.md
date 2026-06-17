@@ -33,17 +33,27 @@
 | Deploy | Vercel | Auto-deploy on push to main |
 | Repo | GitHub private | feature/* → develop → main |
 
-### YALLO design tokens — never change these
+### NEXUS design tokens — primary is tech blue (updated from YALLO gold)
+
+> Pivot history: Sprint 5 — primary brand color changed from `#D4A843` (gold)
+> to `#1a73e8` (tech blue) to match the platform's developer/SaaS positioning.
+> See `/app/DESIGN_TOKENS.md` for the full spec. **All new code must use `primary`,
+> not `gold`.**
 
 ```css
---gold: #D4A843
---gold-light: #F0C866
+--primary: #1a73e8         /* tech blue — replaces gold */
+--primary-light: #4a90e8
+--primary-dark: #1557b0
 --dark: #111111
 --card: #1F1F1F
 --border: #2A2A2A
 --white: #FFFFFF
 --offwhite: #F4F4F2
 --muted: #AAAAAA
+
+/* Legacy alias (back-compat; do not use in new components) */
+--gold: #1a73e8            /* aliased to primary so existing code keeps working */
+--gold-light: #4a90e8
 
 Font primary: Plus Jakarta Sans
 Font mono: DM Mono

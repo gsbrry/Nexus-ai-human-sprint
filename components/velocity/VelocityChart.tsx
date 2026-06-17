@@ -47,7 +47,7 @@ export function VelocityChart({ data }: { data: SprintVelocity[] }) {
             fontFamily: 'DM Mono, ui-monospace',
             fontSize: 11,
           }}
-          labelStyle={{ color: '#D4A843', fontWeight: 700 }}
+          labelStyle={{ color: '#1a73e8', fontWeight: 700 }}
           itemStyle={{ color: '#FFFFFF' }}
           cursor={{ fill: 'rgba(212, 168, 67, 0.08)' }}
         />
@@ -64,14 +64,14 @@ export function VelocityChart({ data }: { data: SprintVelocity[] }) {
           iconSize={8}
         />
         <Bar dataKey="Committed" fill="#2A2A2A" stroke="#3F3F3F" radius={[4, 4, 0, 0]} barSize={24} />
-        <Bar dataKey="Completed" fill="#D4A843" stroke="#F0C866" radius={[4, 4, 0, 0]} barSize={24} />
+        <Bar dataKey="Completed" fill="#1a73e8" stroke="#4a90e8" radius={[4, 4, 0, 0]} barSize={24} />
         <Line
           type="monotone"
           dataKey="Completed"
           name="Trend"
-          stroke="#F0C866"
+          stroke="#4a90e8"
           strokeWidth={2}
-          dot={{ r: 3, fill: '#F0C866', stroke: 'none' }}
+          dot={{ r: 3, fill: '#4a90e8', stroke: 'none' }}
           activeDot={{ r: 5 }}
           legendType="none"
         />
