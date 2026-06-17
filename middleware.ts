@@ -24,12 +24,13 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // Check session cookie cheaply by looking for the supabase auth cookie.
-  const hasSession = request.cookies
+  // Check session cookie cheaply by looking for the supabase auth cookie OR demo cookie.
+  const hasSupabaseSession = request.cookies
     .getAll()
     .some((c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'));
+  const hasDemoSession = Boolean(request.cookies.get('nexus_demo_user')?.value);
 
-  if (!hasSession) {
+  if (!hasSupabaseSession && !hasDemoSession) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('next', pathname);
