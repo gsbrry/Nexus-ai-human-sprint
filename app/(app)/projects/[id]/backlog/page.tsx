@@ -16,7 +16,7 @@ import {
   type MockTask,
   type MockTaskPriority,
   type MockTaskStatus,
-} from '@/lib/mock/yallo';
+} from '@/lib/mock/gbm';
 
 export default function BacklogPage({ params }: { params: { id: string } }) {
   const project = projectByKey(params.id);

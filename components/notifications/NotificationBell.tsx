@@ -33,7 +33,7 @@ import {
   type MockNotification,
 } from '@/lib/mock/notifications';
 
-// Anchored to the YALLO demo "now" so timestamps stay readable across reloads.
+// Anchored to the GBM demo "now" so timestamps stay readable across reloads.
 const DEMO_NOW = new Date('2025-06-11T16:30:00Z');
 
 const FILTERS: { value: 'all' | MockNotifKind | 'mentions'; label: string }[] = [

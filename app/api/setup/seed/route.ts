@@ -5,7 +5,7 @@
  * Otherwise creates:
  *   - 1 organisation ("NEXUS Studio")
  *   - Membership (current user as org_admin) — plus promotes to super_admin so SA-* screens unlock
- *   - 2 projects: YALLO + NEX
+ *   - 2 projects: GBM + NEX
  *   - 2 sprints: 1 active, 1 planned
  *   - ~14 tasks with realistic distribution across statuses & priorities
  *
@@ -75,8 +75,8 @@ export async function POST() {
   const projects = [
     {
       org_id: org.id,
-      key: 'YALLO',
-      name: 'AI Curriculum 2.0',
+      key: 'GBM',
+      name: 'GBM Curriculum 2.0',
       description:
         'Modular AI fluency programme for L&D teams. 12-track curriculum with adaptive paths.',
       status: 'active',
@@ -89,7 +89,7 @@ export async function POST() {
       org_id: org.id,
       key: 'NEX',
       name: 'NEXUS Platform',
-      description: 'Internal build of the project management platform that runs YALLO.',
+      description: 'Internal build of the project management platform that runs GBM.',
       status: 'active',
       color: '#4a90e8',
       created_by: user.id,
@@ -101,7 +101,7 @@ export async function POST() {
   if (!insertedProjects || insertedProjects.length !== 2) {
     return NextResponse.json({ error: 'project seed failed' }, { status: 500 });
   }
-  const [pYallo, pNex] = insertedProjects;
+  const [pGbm, pNex] = insertedProjects;
 
   // 6. Two sprints.
   const { data: insertedSprints } = await admin
@@ -109,7 +109,7 @@ export async function POST() {
     .insert([
       {
         org_id: org.id,
-        project_id: pYallo.id,
+        project_id: pGbm.id,
         name: 'Sprint 14 · Cohort 04 dry run',
         goal: 'Finish track 09–12 production builds, complete proctored capstone QA, and ship reviewer rubric v2.',
         status: 'active',
@@ -123,7 +123,7 @@ export async function POST() {
         org_id: org.id,
         project_id: pNex.id,
         name: 'Sprint 2 · Auth + core screens',
-        goal: 'User logs in and sees YALLO tasks. Auth UI complete, project + task views populated.',
+        goal: 'User logs in and sees GBM tasks. Auth UI complete, project + task views populated.',
         status: 'active',
         start_date: '2025-06-08',
         end_date: '2025-06-11',
@@ -136,7 +136,7 @@ export async function POST() {
   if (!insertedSprints || insertedSprints.length !== 2) {
     return NextResponse.json({ error: 'sprint seed failed' }, { status: 500 });
   }
-  const [sYallo, sNex] = insertedSprints;
+  const [sGbm, sNex] = insertedSprints;
 
   // 7. Tasks — distributed across statuses/priorities for nice dashboards.
   type SeedTask = {
@@ -154,18 +154,18 @@ export async function POST() {
     reporter_id?: string | null;
   };
   const tasks: SeedTask[] = [
-    // YALLO sprint 14
-    { project_id: pYallo.id, sprint_id: sYallo.id, title: 'Track 09 production build · final cut', status: 'in_progress', priority: 'high', type: 'feature', story_points: 8, assignee_id: user.id, reporter_id: user.id },
-    { project_id: pYallo.id, sprint_id: sYallo.id, title: 'Adaptive path engine · cohort 04 dry run', status: 'in_progress', priority: 'critical', type: 'feature', story_points: 13, is_blocked: true, blocker_reason: 'Waiting on data eng for cohort 04 export.', assignee_id: user.id, reporter_id: user.id },
-    { project_id: pYallo.id, sprint_id: sYallo.id, title: 'Reviewer onboarding video · record and cut', status: 'todo', priority: 'medium', type: 'chore', story_points: 3, reporter_id: user.id },
-    { project_id: pYallo.id, sprint_id: sYallo.id, title: 'AI grader · prompt injection regression suite', status: 'in_review', priority: 'high', type: 'feature', story_points: 5, reporter_id: user.id },
-    { project_id: pYallo.id, sprint_id: sYallo.id, title: 'Mobile cohort lobby · 375px lockup', status: 'todo', priority: 'low', type: 'bug', story_points: 2, reporter_id: user.id },
-    { project_id: pYallo.id, sprint_id: sYallo.id, title: 'Capstone proctor heartbeat · reconnect logic', status: 'done', priority: 'high', type: 'feature', story_points: 5, reporter_id: user.id },
-    { project_id: pYallo.id, sprint_id: sYallo.id, title: 'Beta cohort 04 · welcome email batch', status: 'todo', priority: 'medium', type: 'chore', story_points: 2, reporter_id: user.id },
-    { project_id: pYallo.id, sprint_id: sYallo.id, title: 'RAG bibliography · module 11 source review', status: 'in_progress', priority: 'medium', type: 'spike', story_points: 3, reporter_id: user.id },
-    // YALLO backlog
-    { project_id: pYallo.id, sprint_id: null, title: 'Cohort 05 onboarding email sequence', status: 'todo', priority: 'high', type: 'feature', story_points: 5, reporter_id: user.id },
-    { project_id: pYallo.id, sprint_id: null, title: 'Track 11 · reviewer rubric v2 (peer-grading)', status: 'todo', priority: 'critical', type: 'feature', story_points: 13, reporter_id: user.id },
+    // GBM sprint 14
+    { project_id: pGbm.id, sprint_id: sGbm.id, title: 'Track 09 production build · final cut', status: 'in_progress', priority: 'high', type: 'feature', story_points: 8, assignee_id: user.id, reporter_id: user.id },
+    { project_id: pGbm.id, sprint_id: sGbm.id, title: 'Adaptive path engine · cohort 04 dry run', status: 'in_progress', priority: 'critical', type: 'feature', story_points: 13, is_blocked: true, blocker_reason: 'Waiting on data eng for cohort 04 export.', assignee_id: user.id, reporter_id: user.id },
+    { project_id: pGbm.id, sprint_id: sGbm.id, title: 'Reviewer onboarding video · record and cut', status: 'todo', priority: 'medium', type: 'chore', story_points: 3, reporter_id: user.id },
+    { project_id: pGbm.id, sprint_id: sGbm.id, title: 'AI grader · prompt injection regression suite', status: 'in_review', priority: 'high', type: 'feature', story_points: 5, reporter_id: user.id },
+    { project_id: pGbm.id, sprint_id: sGbm.id, title: 'Mobile cohort lobby · 375px lockup', status: 'todo', priority: 'low', type: 'bug', story_points: 2, reporter_id: user.id },
+    { project_id: pGbm.id, sprint_id: sGbm.id, title: 'Capstone proctor heartbeat · reconnect logic', status: 'done', priority: 'high', type: 'feature', story_points: 5, reporter_id: user.id },
+    { project_id: pGbm.id, sprint_id: sGbm.id, title: 'Beta cohort 04 · welcome email batch', status: 'todo', priority: 'medium', type: 'chore', story_points: 2, reporter_id: user.id },
+    { project_id: pGbm.id, sprint_id: sGbm.id, title: 'RAG bibliography · module 11 source review', status: 'in_progress', priority: 'medium', type: 'spike', story_points: 3, reporter_id: user.id },
+    // GBM backlog
+    { project_id: pGbm.id, sprint_id: null, title: 'Cohort 05 onboarding email sequence', status: 'todo', priority: 'high', type: 'feature', story_points: 5, reporter_id: user.id },
+    { project_id: pGbm.id, sprint_id: null, title: 'Track 11 · reviewer rubric v2 (peer-grading)', status: 'todo', priority: 'critical', type: 'feature', story_points: 13, reporter_id: user.id },
     // NEX sprint 2
     { project_id: pNex.id, sprint_id: sNex.id, title: 'A-01 Login + A-02 Register screens', status: 'done', priority: 'high', type: 'feature', story_points: 5, assignee_id: user.id, reporter_id: user.id },
     { project_id: pNex.id, sprint_id: sNex.id, title: 'A-03 Profile setup wizard', status: 'done', priority: 'medium', type: 'feature', story_points: 3, assignee_id: user.id, reporter_id: user.id },

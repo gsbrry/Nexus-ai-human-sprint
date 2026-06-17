@@ -22,7 +22,7 @@ export default function ImportSamplePage() {
               <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold">Sample CSV</div>
               <h1 className="text-xl font-bold tracking-tight">nexus-sample-tasks.csv</h1>
               <p className="text-[12px] text-muted-foreground">
-                8 example rows shaped like a typical YALLO sprint plan.
+                8 example rows shaped like a typical GBM sprint plan.
               </p>
             </div>
           </div>

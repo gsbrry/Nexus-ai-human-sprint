@@ -9,7 +9,7 @@ import {
   projectById,
   tasksForSprint,
   userById,
-} from '@/lib/mock/yallo';
+} from '@/lib/mock/gbm';
 
 export function MockSprintsList() {
   const sprints = [...mockSprints].sort((a, b) => {

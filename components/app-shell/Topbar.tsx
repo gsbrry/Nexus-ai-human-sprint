@@ -31,7 +31,7 @@ import { NavList } from '@/components/app-shell/Sidebar';
 import { RoleSwitch } from '@/components/app-shell/RoleSwitch';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
-import { mockUsers, type MockUser } from '@/lib/mock/yallo';
+import { mockUsers, type MockUser } from '@/lib/mock/gbm';
 import { cn } from '@/lib/utils';
 
 const ROLE_LABEL: Record<MockUser['role'], string> = {
@@ -184,7 +184,7 @@ export function Topbar({
             </div>
             <DialogTitle>Jump in as another teammate</DialogTitle>
             <DialogDescription>
-              Pick anyone on the YALLO team. The whole app refreshes with their tasks, role, and
+              Pick anyone on the GBM team. The whole app refreshes with their tasks, role, and
               notifications.
             </DialogDescription>
           </DialogHeader>

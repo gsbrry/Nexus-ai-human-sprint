@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { mockUsers } from '@/lib/mock/yallo';
+import { mockUsers } from '@/lib/mock/gbm';
 
 const COOKIE_NAME = 'nexus_demo_user';
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days

@@ -12,7 +12,7 @@ import {
   tasksForProject,
   tasksForSprint,
   userById,
-} from '@/lib/mock/yallo';
+} from '@/lib/mock/gbm';
 
 export function MockProjectDetail({ params }: { params: { id: string } }) {
   const project = projectByKey(params.id);

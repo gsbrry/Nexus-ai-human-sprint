@@ -18,7 +18,7 @@ import {
   tasksForSprint,
   userById,
   type MockTask,
-} from '@/lib/mock/yallo';
+} from '@/lib/mock/gbm';
 import { cn } from '@/lib/utils';
 
 export function MockSprintDetail({ params }: { params: { id: string } }) {

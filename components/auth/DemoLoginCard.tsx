@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
-import { mockUsers, type MockUser } from '@/lib/mock/yallo';
+import { mockUsers, type MockUser } from '@/lib/mock/gbm';
 import { cn } from '@/lib/utils';
 
 const ROLE_LABEL: Record<MockUser['role'], string> = {
@@ -101,7 +101,7 @@ export function DemoLoginCard({ defaultUserId = 'u-raphy' }: { defaultUserId?: s
           className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[360px] overflow-y-auto"
         >
           <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            YALLO team · {mockUsers.length} members
+            GBM team · {mockUsers.length} members
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {mockUsers.map((u) => (

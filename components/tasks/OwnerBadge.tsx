@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { MockUser } from '@/lib/mock/yallo';
+import type { MockUser } from '@/lib/mock/gbm';
 
 export function OwnerBadge({ user, className }: { user: MockUser | undefined; className?: string }) {
   if (!user) {

@@ -1,4 +1,4 @@
-import type { MockProject, MockSprint, MockUser } from '@/lib/mock/yallo';
+import type { MockProject, MockSprint, MockUser } from '@/lib/mock/gbm';
 
 export function buildClaudePrompt(args: {
   project: MockProject;

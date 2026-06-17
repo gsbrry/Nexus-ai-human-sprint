@@ -1,5 +1,5 @@
 // Super-admin mock data — used by SA-01 (orgs list) and SA-02 (platform metrics).
-// Anchored to the YALLO demo "now": 2025-06-11T16:30:00Z.
+// Anchored to the GBM demo "now": 2025-06-11T16:30:00Z.
 
 export type Plan = 'starter' | 'team' | 'business' | 'enterprise';
 export type OrgStatus = 'active' | 'trial' | 'past_due' | 'churned';
@@ -47,9 +47,9 @@ export const STATUS_LABEL: Record<OrgStatus, string> = {
 
 export const mockOrgs: MockOrg[] = [
   {
-    id: 'org-yallo',
-    name: 'YALLO AI Academy',
-    slug: 'yallo',
+    id: 'org-gbm',
+    name: 'GBM AI Academy',
+    slug: 'gbm',
     plan: 'enterprise',
     status: 'active',
     members: 42,

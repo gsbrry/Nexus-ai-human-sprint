@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
-import type { MockTaskPriority, MockTaskStatus } from '@/lib/mock/yallo';
-import { statusLabel } from '@/lib/mock/yallo';
+import type { MockTaskPriority, MockTaskStatus } from '@/lib/mock/gbm';
+import { statusLabel } from '@/lib/mock/gbm';
 import { Badge } from '@/components/ui/badge';
 
 const PRIORITY_COLOR: Record<MockTaskPriority, string> = {

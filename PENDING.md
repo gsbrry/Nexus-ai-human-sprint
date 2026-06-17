@@ -22,11 +22,11 @@
 
 | # | Integration | What you need | Status |
 |---|---|---|---|
-| 1 | **Supabase** | Already provided ✅ but **migrations not yet run** | Run `cat /app/supabase/_bundle_schema.sql` and paste into Supabase SQL editor |
-| 2 | **Google OAuth** | OAuth client in Google Cloud Console + provider toggle in Supabase | See `/app/SETUP_SUPABASE.md` step 3 |
-| 3 | **Anthropic Claude** | `ANTHROPIC_API_KEY` (or per-user) for AI agents + Sprint 3 prompt gen | Pending |
-| 4 | **Resend** | `RESEND_API_KEY` + verified sender | Pending — Phase 4C |
-| 5 | **Telegram Bot** | Bot token from @BotFather + chat_id capture flow | Pending — Phase 4C |
+| 1 | **Supabase** | Provided ✅ but **migrations not yet run** | Run `cat /app/supabase/_bundle_schema.sql` and paste into Supabase SQL editor |
+| 2 | **Google OAuth** | ✅ **LIVE** — provider enabled in Supabase, Client ID `950687110108-kq576s5g4...apps.googleusercontent.com` configured. Click "Continue with Google" on `/login` to verify. | DONE |
+| 3 | **Resend** | ✅ **LIVE** — `RESEND_API_KEY` set in `.env.local`, test send verified (msg id `4318830e-...`). Endpoints: `/api/integrations/resend/send`, `/api/integrations/resend/invite`. Currently using `onboarding@resend.dev` sender — verify your own domain later for production. | DONE |
+| 4 | **Anthropic Claude** | `ANTHROPIC_API_KEY` (or per-user) for AI agents + Sprint 3 prompt gen | Pending |
+| 5 | **Telegram Bot** | Bot token from @BotFather + chat_id capture flow | Pending |
 
 ---
 
@@ -45,7 +45,7 @@ cat /app/supabase/_bundle_schema.sql
 ```
 
 If you ever want to go back to mock mode without losing your Supabase data:
-- Sign out → use Demo mode picker on /login → you're back on YALLO mocks instantly
+- Sign out → use Demo mode picker on /login → you're back on GBM mocks instantly
 
 ---
 

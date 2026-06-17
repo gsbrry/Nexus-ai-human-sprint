@@ -14,7 +14,7 @@ import {
   type MockTask,
   type MockTaskPriority,
   type MockTaskStatus,
-} from '@/lib/mock/yallo';
+} from '@/lib/mock/gbm';
 
 export function MockBacklog() {
   const initial = useMemo(() => mockTasks.filter((t) => !t.sprint_id), []);

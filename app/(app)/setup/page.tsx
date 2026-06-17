@@ -207,7 +207,7 @@ export default async function SetupPage() {
                     <CheckCircle2 className="size-3 text-primary" />1 org (NEXUS Studio) · you become super_admin
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="size-3 text-primary" />2 projects (YALLO + NEX) + 2 active sprints
+                    <CheckCircle2 className="size-3 text-primary" />2 projects (GBM + NEX) + 2 active sprints
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="size-3 text-primary" />14 tasks across statuses & priorities

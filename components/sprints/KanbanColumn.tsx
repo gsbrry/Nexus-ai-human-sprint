@@ -2,7 +2,7 @@
 import { useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 import { KanbanCard } from './KanbanCard';
-import type { MockTask, MockTaskStatus } from '@/lib/mock/yallo';
+import type { MockTask, MockTaskStatus } from '@/lib/mock/gbm';
 
 export function KanbanColumn({
   id,

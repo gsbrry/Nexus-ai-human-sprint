@@ -7,7 +7,7 @@ create table public.projects (
   id            uuid primary key default gen_random_uuid(),
   org_id        uuid not null references public.organisations(id) on delete cascade,
   name          text not null,
-  key           text not null,  -- e.g. 'YALLO' — used to prefix task_key
+  key           text not null,  -- e.g. 'GBM' — used to prefix task_key
   description   text,
   status        project_status not null default 'active',
   color         text default '#D4A843',

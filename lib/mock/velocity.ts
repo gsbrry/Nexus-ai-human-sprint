@@ -1,7 +1,7 @@
 // Historical sprint velocity (mock). Real data will come from velocity_snapshots
 // after sprint completion jobs run (migration 009).
 
-import { mockUsers } from './yallo';
+import { mockUsers } from './gbm';
 
 export type SprintVelocity = {
   sprint_number: number;
@@ -14,8 +14,8 @@ export type SprintVelocity = {
   tasks_completed: number;
 };
 
-// Last 6 sprints of YALLO AI Curriculum project, including the active one.
-export const yalloVelocity: SprintVelocity[] = [
+// Last 6 sprints of GBM AI Curriculum project, including the active one.
+export const gbmVelocity: SprintVelocity[] = [
   {
     sprint_number: 9,
     name: 'Track 04 spike',
@@ -119,7 +119,7 @@ export const memberVelocityByUser = memberVelocity.reduce<Record<string, MemberV
 
 // Helpers ------------------------------------------------------------
 export function orgAvgVelocity(): number {
-  const completed = yalloVelocity
+  const completed = gbmVelocity
     .slice(0, -1) // exclude active sprint
     .map((s) => s.points_completed);
   return Math.round((completed.reduce((s, v) => s + v, 0) / completed.length) * 10) / 10;
@@ -127,7 +127,7 @@ export function orgAvgVelocity(): number {
 
 export function orgPredictedNext(): number {
   // Weighted: last 3 sprints, more weight to the newest
-  const last3 = yalloVelocity.slice(-4, -1);
+  const last3 = gbmVelocity.slice(-4, -1);
   if (last3.length === 0) return 0;
   const weights = [1, 1.5, 2];
   const num = last3.reduce((s, sp, i) => s + sp.points_completed * weights[i], 0);
@@ -136,7 +136,7 @@ export function orgPredictedNext(): number {
 }
 
 export function orgCompletionRate(): number {
-  const completed = yalloVelocity
+  const completed = gbmVelocity
     .slice(0, -1)
     .reduce((s, sp) => ({ c: s.c + sp.points_completed, t: s.t + sp.points_committed }), { c: 0, t: 0 });
   return Math.round((completed.c / Math.max(1, completed.t)) * 100);

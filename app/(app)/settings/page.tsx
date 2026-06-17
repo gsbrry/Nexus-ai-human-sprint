@@ -32,7 +32,7 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
 import { InviteDialog } from '@/components/settings/InviteDialog';
-import { mockUsers, type MockRole } from '@/lib/mock/yallo';
+import { mockUsers, type MockRole } from '@/lib/mock/gbm';
 import { cn } from '@/lib/utils';
 
 const ROLE_LABEL: Record<MockRole, string> = {
@@ -209,7 +209,7 @@ function ProfileTab() {
 function OrgTab() {
   const [orgName, setOrgName] = useState('NEXUS Studio');
   const [slug, setSlug] = useState('nexus');
-  const [defaultProject, setDefaultProject] = useState('YALLO');
+  const [defaultProject, setDefaultProject] = useState('GBM');
   const [saved, setSaved] = useState(false);
 
   return (
@@ -245,7 +245,7 @@ function OrgTab() {
               onChange={(e) => setDefaultProject(e.target.value)}
               className="w-full rounded-md border border-border bg-[#0A0A0A] px-3 py-2 text-sm focus:outline-none focus:border-gold/40"
             >
-              <option value="YALLO">YALLO · AI Curriculum 2.0</option>
+              <option value="GBM">GBM · GBM Curriculum 2.0</option>
               <option value="NEX">NEX · NEXUS Platform</option>
             </select>
             <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">

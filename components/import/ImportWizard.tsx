@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-import { mockProjects, mockSprints, mockUsers, projectById, type MockProject, type MockSprint } from '@/lib/mock/yallo';
+import { mockProjects, mockSprints, mockUsers, projectById, type MockProject, type MockSprint } from '@/lib/mock/gbm';
 import { buildClaudePrompt } from '@/lib/import/prompt';
 import { importPayloadSchema, type ImportPayload } from '@/lib/import/schema';
 

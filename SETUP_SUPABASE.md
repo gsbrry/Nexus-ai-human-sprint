@@ -198,7 +198,7 @@ hitting Supabase for real.** Nothing else needs to change in the auth code.
 Once `/dashboard` loads with your real Supabase user, the next milestones are:
 
 1. **Swap mocks → real Supabase queries** — every screen currently reads from
-   `/app/lib/mock/yallo.ts`, `/app/lib/mock/notifications.ts`, `/app/lib/mock/admin.ts`.
+   `/app/lib/mock/gbm.ts`, `/app/lib/mock/notifications.ts`, `/app/lib/mock/admin.ts`.
    They should hit `supabase.from('tasks').select()` etc. instead.
 
 2. **RLS verification** — Nina's 4-test checklist (see `/app/PENDING.md` section 3).

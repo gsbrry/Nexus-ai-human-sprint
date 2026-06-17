@@ -13,13 +13,13 @@ import {
   tasksAssignedTo,
   tasksForSprint,
   userById,
-} from '@/lib/mock/yallo';
+} from '@/lib/mock/gbm';
 import { isAuthConfigured } from '@/lib/auth-config';
 
 export function MemberDashboard() {
   const me = userById(CURRENT_USER_ID)!;
-  const yallo = mockProjects[0];
-  const sprint = activeSprintForProject(yallo.id)!;
+  const gbm = mockProjects[0];
+  const sprint = activeSprintForProject(gbm.id)!;
   const sprintTasks = tasksForSprint(sprint.id);
   const myTasks = tasksAssignedTo(CURRENT_USER_ID).filter((t) => t.status !== 'done').slice(0, 5);
 
@@ -41,7 +41,7 @@ export function MemberDashboard() {
         <div className="rounded-lg border border-gold/30 bg-gold/5 px-4 sm:px-5 py-3">
           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold mb-1">Preview mode</div>
           <p className="text-[12px] text-muted-foreground">
-            YALLO mock data is rendered below. Real Supabase queries activate once{' '}
+            GBM mock data is rendered below. Real Supabase queries activate once{' '}
             <code className="font-mono text-gold">.env.local</code> is set and migrations are run.
           </p>
         </div>
@@ -89,7 +89,7 @@ export function MemberDashboard() {
               </p>
             </div>
             <Link
-              href={`/projects/${yallo.key.toLowerCase()}`}
+              href={`/projects/${gbm.key.toLowerCase()}`}
               className="shrink-0 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-gold hover:text-gold-light"
             >
               Open project <ArrowUpRight className="size-3.5" />
@@ -134,7 +134,7 @@ export function MemberDashboard() {
           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Crew</div>
           <Card>
             <CardContent className="p-4 space-y-3">
-              {yallo.members.slice(0, 6).map((id) => {
+              {gbm.members.slice(0, 6).map((id) => {
                 const u = userById(id)!;
                 const onTasks = tasksAssignedTo(id).filter((t) => t.status !== 'done').length;
                 return (

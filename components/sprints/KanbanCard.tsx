@@ -5,7 +5,7 @@ import { AlertTriangle, GripVertical, MessageSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
 import { PriorityDot } from '@/components/tasks/StatusBadge';
-import { userById, type MockTask } from '@/lib/mock/yallo';
+import { userById, type MockTask } from '@/lib/mock/gbm';
 import { cn } from '@/lib/utils';
 
 export function KanbanCard({

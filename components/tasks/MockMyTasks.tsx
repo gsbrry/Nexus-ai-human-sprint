@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { Toggle } from '@/components/ui/toggle-bar';
 import { TaskList } from '@/components/tasks/TaskList';
-import { CURRENT_USER_ID, mockProjects, tasksAssignedTo, type MockTask } from '@/lib/mock/yallo';
+import { CURRENT_USER_ID, mockProjects, tasksAssignedTo, type MockTask } from '@/lib/mock/gbm';
 
 export function MockMyTasks() {
   const [scope, setScope] = useState<'all' | string>('all');

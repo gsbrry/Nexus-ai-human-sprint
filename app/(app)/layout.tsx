@@ -6,7 +6,7 @@ import { Topbar } from '@/components/app-shell/Topbar';
 import { PreviewRoleProvider } from '@/components/app-shell/PreviewRoleProvider';
 import { createClient } from '@/lib/supabase/server';
 import { isAuthConfigured } from '@/lib/auth-config';
-import { mockUsers } from '@/lib/mock/yallo';
+import { mockUsers } from '@/lib/mock/gbm';
 
 type Role = 'member' | 'scrum_master' | 'org_admin' | 'super_admin';
 
@@ -41,7 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     fullName = (user.user_metadata?.full_name as string | undefined) ?? null;
   } else if (!demoUserId && !isAuthConfigured()) {
     // 3. Mock fallback when nothing is configured.
-    email = 'raphy@yallo.ai';
+    email = 'raphy@gbm.ai';
     fullName = 'Raphy Varghese';
   }
 

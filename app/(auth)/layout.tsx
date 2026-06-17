@@ -19,7 +19,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="w-full max-w-[440px]">{children}</div>
       </main>
       <footer className="border-t border-border bg-[#0A0A0A] px-8 py-5 text-center font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-        Nexus · YALLO AI Academy build
+        Nexus · GBM AI Academy build
       </footer>
     </div>
   );
