@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useContext, useMemo, useState } from 'react';
-import { CURRENT_USER_ID, userById, type MockUser } from '@/lib/mock/yallo';
+import { CURRENT_USER_ID, userById, type MockUser } from '@/lib/mock/gbm';
 
 type PreviewRole = 'member' | 'scrum_master' | 'org_admin' | 'super_admin';
 

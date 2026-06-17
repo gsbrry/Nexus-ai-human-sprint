@@ -28,7 +28,7 @@ import {
   type MockTaskPriority,
   type MockTaskStatus,
   type MockTaskType,
-} from '@/lib/mock/yallo';
+} from '@/lib/mock/gbm';
 import { cn } from '@/lib/utils';
 
 const POINT_OPTIONS = [1, 2, 3, 5, 8, 13];

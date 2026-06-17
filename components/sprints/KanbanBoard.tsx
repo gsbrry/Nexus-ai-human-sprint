@@ -18,7 +18,7 @@ import { TaskDetailSheet } from '@/components/tasks/TaskDetailSheet';
 import { Badge } from '@/components/ui/badge';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
 import { PriorityDot } from '@/components/tasks/StatusBadge';
-import { statusLabel, userById, type MockTask, type MockTaskStatus } from '@/lib/mock/yallo';
+import { statusLabel, userById, type MockTask, type MockTaskStatus } from '@/lib/mock/gbm';
 import { KanbanColumn } from './KanbanColumn';
 import { KanbanCard } from './KanbanCard';
 import { cn } from '@/lib/utils';

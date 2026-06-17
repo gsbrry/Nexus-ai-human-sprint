@@ -13,7 +13,7 @@
 **Vision:** The first project management tool where human teams and AI agents work side by side in sprints.
 **Founder:** Raphy Varghese (you)
 **Status:** Active build — 14-day sprint to v1 launch
-**Demo data:** YALLO AI Academy project (from Raphy's HTML file) — seeded into dev DB on Day 1
+**Demo data:** GBM AI Academy project (from Raphy's HTML file) — seeded into dev DB on Day 1
 
 ---
 
@@ -22,7 +22,7 @@
 | Layer | Technology | Notes |
 |---|---|---|
 | Framework | Next.js 14 App Router + TypeScript | Emergent → GitHub → Vercel |
-| Styling | Tailwind CSS + shadcn/ui | YALLO dark theme |
+| Styling | Tailwind CSS + shadcn/ui | GBM dark theme |
 | Database | Supabase · PostgreSQL + RLS | Multi-tenant, org-isolated |
 | Auth | Supabase Auth | Email/password + Google SSO |
 | AI engine | Claude API (optional) + JSON workflow (default) | 3 modes — see AI section |
@@ -33,7 +33,7 @@
 | Deploy | Vercel | Auto-deploy on push to main |
 | Repo | GitHub private | feature/* → develop → main |
 
-### NEXUS design tokens — primary is tech blue (updated from YALLO gold)
+### NEXUS design tokens — primary is tech blue (updated from GBM gold)
 
 > Pivot history: Sprint 5 — primary brand color changed from `#D4A843` (gold)
 > to `#1a73e8` (tech blue) to match the platform's developer/SaaS positioning.
@@ -84,7 +84,7 @@ Last decision: Migration files written with full schema, RLS, triggers, indexes.
 - Soft deletes only — never hard delete users, projects, sprints, tasks, or certificates
 - org_id denormalised into tasks, sprints, and comments — never join up for RLS
 - Every route uses server-side Supabase client — never expose service_role key to client
-- YALLO seed data must load correctly before Sprint 2 begins
+- GBM seed data must load correctly before Sprint 2 begins
 
 ---
 
@@ -164,7 +164,7 @@ nexus/
 ├── supabase/
 │   ├── migrations/              ← 001_enums.sql through 013_audit_log.sql
 │   ├── seeds/
-│   │   └── dev_seed.sql         ← YALLO AI Academy data
+│   │   └── dev_seed.sql         ← GBM AI Academy data
 │   └── config.toml
 └── .github/
     ├── PULL_REQUEST_TEMPLATE.md
@@ -232,7 +232,7 @@ nexus/
 - Writes all 28 RLS policies — no cross-org data leakage at any level
 - Creates all 18 indexes — org_id indexes are non-negotiable for query performance
 - Runs all 4 manual RLS tests before Sprint 2 begins (his personal gate)
-- Loads YALLO AI Academy seed data into dev DB on Day 3
+- Loads GBM AI Academy seed data into dev DB on Day 3
 - Denormalises org_id into tasks, sprints, and comments — never join up for RLS
 - Reviews any schema change proposed during the build
 - Called back in at Sprint 4 (notifications schema) if any changes needed
@@ -252,7 +252,7 @@ nexus/
 **Stack:** React, Next.js (App Router pages), Tailwind, shadcn/ui components
 **Owns:** All UI screens — building against Marcus's API routes.
 **Responsibilities:**
-- Builds all 24 v1 screens matching YALLO dark theme design tokens
+- Builds all 24 v1 screens matching GBM dark theme design tokens
 - Builds auth screens: A-01 through A-04
 - Builds dashboard screens: D-01 through D-03
 - Builds project screens: P-01 through P-03
@@ -278,7 +278,7 @@ nexus/
 **Background:** Led UX at Coursera and DeepLearning.ai. Knows what makes users complete tasks.
 **Owns:** Every screen the user sees. Design decisions. Mobile specs. Component patterns.
 **Responsibilities:**
-- Defines the design system: YALLO gold on dark, DM Mono for IDs, coloured track dots
+- Defines the design system: GBM gold on dark, DM Mono for IDs, coloured track dots
 - Specifies mobile behaviour for all 11 mobile-priority screens
 - Approves all screen designs before Anay builds them
 - Reviews Anay's implementations for design fidelity
@@ -286,7 +286,7 @@ nexus/
 - Defines comment filter pills: All · Human · AI Agent
 - Defines project/all tasks toggle behaviour
 - Specifies Kanban card anatomy: task ID, title, avatar, priority dot, points, blocker badge
-- Reviews sprint board T-01 against YALLO HTML reference — must match exactly
+- Reviews sprint board T-01 against GBM HTML reference — must match exactly
 **Call her when:** Any screen design question, UX decision, mobile spec, brand alignment, "how should this look?", before Anay starts building any screen
 **Her quality gate:** "Does this help the user do their job, or does it make the admin feel better?" — applied to every feature request.
 **Her most important rule:** T-03 task detail is a slide-in side panel on desktop — never a full page navigation. Bottom sheet on mobile.
@@ -508,7 +508,7 @@ Notifications:    notifications, audit_log
 | Sprint | Days | Theme | Gate |
 |---|---|---|---|
 | 1 | 1–3 | Foundation: DB + Auth | RLS tests pass · seed data loads |
-| 2 | 4–6 | Auth UI + core screens | User logs in · sees YALLO tasks |
+| 2 | 4–6 | Auth UI + core screens | User logs in · sees GBM tasks |
 | 3 | 7–9 | Sprint board + Kanban + Import | Full CSV import flow works |
 | 4 | 10–12 | Notifications + settings + velocity | All 3 notification channels fire |
 | 5 | 13–14 | Super admin + QA + deploy | Raphy signs off · ship it |
@@ -585,7 +585,7 @@ Merge rules:
 | Task detail as slide-in panel · never full page | Layla | Day 0 |
 | Soft deletes only · no hard deletes | David | Day 0 |
 | audit_log UPDATE/DELETE revoked · not restricted | David | Day 0 |
-| YALLO AI Academy data as dev seed | Shreya | Day 0 |
+| GBM AI Academy data as dev seed | Shreya | Day 0 |
 
 ---
 

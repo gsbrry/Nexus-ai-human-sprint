@@ -16,7 +16,7 @@ const config: Config = {
     extend: {
       colors: {
         // NEXUS design tokens (raw)
-        // Primary brand color — tech blue (was YALLO gold #1a73e8 → now #1a73e8)
+        // Primary brand color — tech blue (was GBM gold #1a73e8 → now #1a73e8)
         primary: {
           DEFAULT: '#1a73e8',
           light: '#4a90e8',

@@ -430,7 +430,7 @@ create table public.projects (
   id            uuid primary key default gen_random_uuid(),
   org_id        uuid not null references public.organisations(id) on delete cascade,
   name          text not null,
-  key           text not null,  -- e.g. 'YALLO' — used to prefix task_key
+  key           text not null,  -- e.g. 'GBM' — used to prefix task_key
   description   text,
   status        project_status not null default 'active',
   color         text default '#D4A843',
@@ -568,7 +568,7 @@ create table public.tasks (
   project_id    uuid not null references public.projects(id) on delete cascade,
   sprint_id     uuid references public.sprints(id) on delete set null,
   parent_id     uuid references public.tasks(id) on delete set null,
-  task_key      text not null,   -- e.g. 'YALLO-42'
+  task_key      text not null,   -- e.g. 'GBM-42'
   title         text not null,
   description   text,
   status        task_status not null default 'todo',

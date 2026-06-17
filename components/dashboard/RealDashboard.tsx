@@ -465,7 +465,7 @@ function EmptyWorkspace({ user }: { user: { id: string; email?: string } }) {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="size-3 text-primary" />
-                  2 projects: YALLO (AI Curriculum 2.0) and NEX (this platform)
+                  2 projects: GBM (GBM Curriculum 2.0) and NEX (this platform)
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="size-3 text-primary" />

@@ -9,7 +9,7 @@ create table public.tasks (
   project_id    uuid not null references public.projects(id) on delete cascade,
   sprint_id     uuid references public.sprints(id) on delete set null,
   parent_id     uuid references public.tasks(id) on delete set null,
-  task_key      text not null,   -- e.g. 'YALLO-42'
+  task_key      text not null,   -- e.g. 'GBM-42'
   title         text not null,
   description   text,
   status        task_status not null default 'todo',

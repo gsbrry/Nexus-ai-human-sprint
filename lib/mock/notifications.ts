@@ -16,7 +16,7 @@ export type MockNotification = {
   read: boolean;
 };
 
-// Anchored to the YALLO demo "now" so groupings render predictably.
+// Anchored to the GBM demo "now" so groupings render predictably.
 const NOW = new Date('2025-06-11T16:30:00Z');
 
 function minutesAgo(m: number) {
@@ -33,10 +33,10 @@ export const mockNotifications: MockNotification[] = [
   {
     id: 'n-1',
     kind: 'mention',
-    title: 'Marcus mentioned you on YALLO-143',
+    title: 'Marcus mentioned you on GBM-143',
     body: '@Raphy heads-up — if data eng is still blocking at EOD I will escalate.',
-    task_key: 'YALLO-143',
-    href: '/sprints/s-yallo-14',
+    task_key: 'GBM-143',
+    href: '/sprints/s-gbm-14',
     actor_name: 'Marcus Alden',
     actor_initials: 'MA',
     actor_color: '#7AA7E0',
@@ -46,10 +46,10 @@ export const mockNotifications: MockNotification[] = [
   {
     id: 'n-2',
     kind: 'ai',
-    title: 'Aria · RAG Agent posted on YALLO-148',
+    title: 'Aria · RAG Agent posted on GBM-148',
     body: '14/47 sources flagged as non-peer-reviewed. Draft replacements attached.',
-    task_key: 'YALLO-148',
-    href: '/sprints/s-yallo-14',
+    task_key: 'GBM-148',
+    href: '/sprints/s-gbm-14',
     actor_name: 'Aria · RAG Agent',
     actor_initials: 'AI',
     actor_color: '#9C7DD6',
@@ -72,10 +72,10 @@ export const mockNotifications: MockNotification[] = [
   {
     id: 'n-4',
     kind: 'blocker',
-    title: 'Blocker raised on YALLO-143',
+    title: 'Blocker raised on GBM-143',
     body: 'Waiting on data eng to produce cohort 04 anonymised export.',
-    task_key: 'YALLO-143',
-    href: '/sprints/s-yallo-14',
+    task_key: 'GBM-143',
+    href: '/sprints/s-gbm-14',
     actor_name: 'Marcus Alden',
     actor_initials: 'MA',
     actor_color: '#7AA7E0',
@@ -97,10 +97,10 @@ export const mockNotifications: MockNotification[] = [
   {
     id: 'n-6',
     kind: 'system',
-    title: 'Anay completed YALLO-147',
+    title: 'Anay completed GBM-147',
     body: 'Capstone proctor heartbeat · reconnect logic.',
-    task_key: 'YALLO-147',
-    href: '/sprints/s-yallo-14',
+    task_key: 'GBM-147',
+    href: '/sprints/s-gbm-14',
     actor_name: 'Anay Roy',
     actor_initials: 'AN',
     actor_color: '#F09595',
@@ -112,7 +112,7 @@ export const mockNotifications: MockNotification[] = [
     kind: 'mention',
     title: 'Shreya mentioned you on the cohort 05 drip',
     body: '@Raphy can you sign off on the 7-email drip drafts by Friday?',
-    task_key: 'YALLO-160',
+    task_key: 'GBM-160',
     href: '/sprints/backlog',
     actor_name: 'Shreya Patel',
     actor_initials: 'SP',
@@ -123,9 +123,9 @@ export const mockNotifications: MockNotification[] = [
   {
     id: 'n-8',
     kind: 'ai',
-    title: 'Aria · RAG Agent drafted YALLO-161 axes',
+    title: 'Aria · RAG Agent drafted GBM-161 axes',
     body: 'Recommending Cohen’s kappa over raw % agreement. Drafted axis definitions attached.',
-    task_key: 'YALLO-161',
+    task_key: 'GBM-161',
     href: '/sprints/backlog',
     actor_name: 'Aria · RAG Agent',
     actor_initials: 'AI',
@@ -148,7 +148,7 @@ export const mockNotifications: MockNotification[] = [
   {
     id: 'n-10',
     kind: 'sprint',
-    title: 'Sprint #14 · YALLO closed',
+    title: 'Sprint #14 · GBM closed',
     body: '32 points completed of 40 committed. Carry over: 8 pts to Sprint #15.',
     href: '/velocity',
     actor_name: 'Nexus system',

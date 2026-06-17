@@ -1,6 +1,6 @@
 # NEXUS · Design tokens
 
-> **Last updated:** Sprint 5 — primary brand color pivoted from YALLO gold (`#D4A843`)
+> **Last updated:** Sprint 5 — primary brand color pivoted from GBM gold (`#D4A843`)
 > to tech blue (`#1a73e8`) to match the platform's developer/SaaS positioning.
 
 ---
@@ -61,7 +61,7 @@ pass will rename every remaining `text-gold` / `bg-gold` / `border-gold` →
 | Family | Variable | Use |
 |---|---|---|
 | Plus Jakarta Sans | `var(--font-jakarta)` | Body, headings, UI text |
-| DM Mono | `var(--font-dm-mono)` | Metadata, IDs (e.g. `YALLO-143`), code, timestamps, badge labels |
+| DM Mono | `var(--font-dm-mono)` | Metadata, IDs (e.g. `GBM-143`), code, timestamps, badge labels |
 
 ---
 
@@ -87,7 +87,7 @@ pass will rename every remaining `text-gold` / `bg-gold` / `border-gold` →
 
 ---
 
-## Migration from YALLO theme
+## Migration from GBM theme
 
 The pivot from gold (`#D4A843`) to blue (`#1a73e8`) was a **single-file change**
 plus a global find-replace:

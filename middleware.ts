@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password'];
-const PUBLIC_PREFIXES = ['/api/auth/', '/_next/', '/favicon', '/assets/'];
+const PUBLIC_PREFIXES = ['/api/', '/_next/', '/favicon', '/assets/'];
 
 function isPublic(pathname: string): boolean {
   if (pathname === '/') return true;

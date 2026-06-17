@@ -9,7 +9,7 @@ import {
   mockProjects,
   tasksForProject,
   userById,
-} from '@/lib/mock/yallo';
+} from '@/lib/mock/gbm';
 
 export function MockProjectsList() {
   return (

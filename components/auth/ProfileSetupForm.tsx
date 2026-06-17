@@ -119,7 +119,7 @@ export function ProfileSetupForm() {
       {orgAction === 'create' ? (
         <div className="space-y-2">
           <Label htmlFor="org_name">Organisation name</Label>
-          <Input id="org_name" type="text" placeholder="e.g. YALLO Academy" {...register('org_name')} />
+          <Input id="org_name" type="text" placeholder="e.g. GBM Academy" {...register('org_name')} />
           {errors.org_name && <p className="text-xs text-destructive">{errors.org_name.message}</p>}
         </div>
       ) : (

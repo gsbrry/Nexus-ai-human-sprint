@@ -7,14 +7,14 @@ import {
   orgAvgVelocity,
   orgCompletionRate,
   orgPredictedNext,
-  yalloVelocity,
+  gbmVelocity,
 } from '@/lib/mock/velocity';
 
 export function MockVelocityPage() {
   const avg = orgAvgVelocity();
   const predicted = orgPredictedNext();
   const rate = orgCompletionRate();
-  const lastCompleted = yalloVelocity[yalloVelocity.length - 2];
+  const lastCompleted = gbmVelocity[gbmVelocity.length - 2];
   const lastDelta = lastCompleted.points_completed - lastCompleted.points_committed;
   const lastDeltaPct = Math.round((lastCompleted.points_completed / lastCompleted.points_committed) * 100);
 
@@ -25,10 +25,10 @@ export function MockVelocityPage() {
           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold">V-01 · Velocity</div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Sprint velocity</h1>
           <p className="text-muted-foreground text-sm sm:text-base">
-            Committed vs completed across the last {yalloVelocity.length} sprints. AI Curriculum 2.0.
+            Committed vs completed across the last {gbmVelocity.length} sprints. GBM Curriculum 2.0.
           </p>
         </div>
-        <Badge variant="gold">YALLO · Sprint {yalloVelocity[yalloVelocity.length - 1].sprint_number} active</Badge>
+        <Badge variant="gold">GBM · Sprint {gbmVelocity[gbmVelocity.length - 1].sprint_number} active</Badge>
       </div>
 
       {/* KPI row */}
@@ -81,7 +81,7 @@ export function MockVelocityPage() {
               </span>
             </div>
           </div>
-          <VelocityChart data={yalloVelocity} />
+          <VelocityChart data={gbmVelocity} />
         </CardContent>
       </Card>
 
@@ -97,7 +97,7 @@ export function MockVelocityPage() {
               Sprint 11 missed plan (34/52 — 65%) due to reviewer tooling blockers. Last 3 sprints averaged{' '}
               <span className="text-gold font-semibold">
                 {Math.round(
-                  yalloVelocity
+                  gbmVelocity
                     .slice(-4, -1)
                     .reduce((s, sp) => s + sp.points_completed, 0) / 3
                 )}{' '}

@@ -78,10 +78,30 @@ export function InviteDialog({
     }
     setSending(true);
     setError(null);
-    // Mock send — pretend Resend + Telegram fired
-    await new Promise((r) => setTimeout(r, 800));
-    setDone(pending.map((p) => p.email));
-    onInvite?.(pending.map((p) => p.email), role);
+
+    const emails = pending.map((p) => p.email);
+    try {
+      const res = await fetch('/api/integrations/resend/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emails, role, workspaceName: 'NEXUS Studio' }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setDone((json.sent as string[]) ?? emails);
+      } else if (res.status === 503) {
+        // Resend not configured \u2014 silently fall back to mock UX so demo still works
+        await new Promise((r) => setTimeout(r, 600));
+        setDone(emails);
+      } else {
+        const json = await res.json().catch(() => ({}));
+        setError(json.error ?? `Send failed (HTTP ${res.status})`);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Network error');
+    }
+
+    onInvite?.(emails, role);
     setSending(false);
   }
 

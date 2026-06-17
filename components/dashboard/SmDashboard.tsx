@@ -11,18 +11,18 @@ import {
   mockUsers,
   tasksAssignedTo,
   tasksForSprint,
-} from '@/lib/mock/yallo';
+} from '@/lib/mock/gbm';
 
 export function SmDashboard() {
-  const yallo = mockProjects[0];
-  const sprint = activeSprintForProject(yallo.id)!;
+  const gbm = mockProjects[0];
+  const sprint = activeSprintForProject(gbm.id)!;
   const sprintTasks = tasksForSprint(sprint.id);
   const totalPoints = sprintTasks.reduce((s, t) => s + (t.story_points ?? 0), 0);
   const donePoints = sprintTasks.filter((t) => t.status === 'done').reduce((s, t) => s + (t.story_points ?? 0), 0);
   const blockers = sprintTasks.filter((t) => t.is_blocked);
 
   // Per-member capacity in this sprint
-  const capacity = yallo.members
+  const capacity = gbm.members
     .map((id) => {
       const u = mockUsers.find((m) => m.id === id);
       if (!u) return null;
@@ -75,7 +75,7 @@ export function SmDashboard() {
               </p>
             </div>
             <Link
-              href={`/projects/${yallo.key.toLowerCase()}`}
+              href={`/projects/${gbm.key.toLowerCase()}`}
               className="shrink-0 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-gold hover:text-gold-light"
             >
               Open project <ArrowUpRight className="size-3.5" />

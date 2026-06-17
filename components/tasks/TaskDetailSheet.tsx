@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
 import { StatusBadge, PriorityDot } from '@/components/tasks/StatusBadge';
-import { projectById, userById, type MockTask } from '@/lib/mock/yallo';
+import { projectById, userById, type MockTask } from '@/lib/mock/gbm';
 import { cn } from '@/lib/utils';
 
 export function TaskDetailSheet({

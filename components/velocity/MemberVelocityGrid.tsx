@@ -2,7 +2,7 @@ import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
 import { Sparkline } from '@/components/velocity/Sparkline';
-import { mockUsers } from '@/lib/mock/yallo';
+import { mockUsers } from '@/lib/mock/gbm';
 import { memberStats } from '@/lib/mock/velocity';
 import { cn } from '@/lib/utils';
 

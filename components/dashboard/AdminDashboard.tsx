@@ -10,7 +10,7 @@ import {
   mockUsers,
   tasksForProject,
   userById,
-} from '@/lib/mock/yallo';
+} from '@/lib/mock/gbm';
 
 export function AdminDashboard() {
   const projects = mockProjects;
@@ -23,7 +23,7 @@ export function AdminDashboard() {
     <div className="max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8 space-y-6 md:space-y-8">
       <div className="space-y-2">
         <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold">D-03 · Org admin dashboard</div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">YALLO Academy</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">GBM Academy</h1>
         <p className="text-muted-foreground text-sm sm:text-base">
           Org-wide health across {projects.length} active projects and {mockUsers.length} members.
         </p>

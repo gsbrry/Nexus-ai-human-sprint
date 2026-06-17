@@ -1,4 +1,4 @@
-// YALLO AI Academy mock data. Used everywhere until Supabase migrations are run
+// GBM AI Academy mock data. Used everywhere until Supabase migrations are run
 // and the dev_seed.sql is loaded. Drop-in replacements use the same shape as the
 // future supabase types.
 
@@ -75,17 +75,17 @@ export type MockTask = {
 };
 
 // ---------------------------------------------------------------------------
-// Users (the YALLO build team)
+// Users (the GBM build team)
 // ---------------------------------------------------------------------------
 export const mockUsers: MockUser[] = [
-  { id: 'u-raphy', name: 'Raphy Varghese', email: 'raphy@yallo.ai', role: 'org_admin', color: 'gold', initials: 'RV' },
-  { id: 'u-marcus', name: 'Marcus Alden', email: 'marcus@yallo.ai', role: 'scrum_master', color: 'blue', initials: 'MA' },
-  { id: 'u-david', name: 'David Rowe', email: 'david@yallo.ai', role: 'member', color: 'gold', initials: 'DR' },
-  { id: 'u-anay', name: 'Anay Goenka', email: 'anay@yallo.ai', role: 'member', color: 'teal', initials: 'AG' },
-  { id: 'u-aria', name: 'Aria Chen', email: 'aria@yallo.ai', role: 'member', color: 'purple', initials: 'AC' },
-  { id: 'u-layla', name: 'Layla Kim', email: 'layla@yallo.ai', role: 'member', color: 'amber', initials: 'LK' },
-  { id: 'u-nina', name: 'Nina Torres', email: 'nina@yallo.ai', role: 'member', color: 'red', initials: 'NT' },
-  { id: 'u-shreya', name: 'Shreya Patel', email: 'shreya@yallo.ai', role: 'scrum_master', color: 'green', initials: 'SP' },
+  { id: 'u-raphy', name: 'Raphy Varghese', email: 'raphy@gbm.ai', role: 'org_admin', color: 'gold', initials: 'RV' },
+  { id: 'u-marcus', name: 'Marcus Alden', email: 'marcus@gbm.ai', role: 'scrum_master', color: 'blue', initials: 'MA' },
+  { id: 'u-david', name: 'David Rowe', email: 'david@gbm.ai', role: 'member', color: 'gold', initials: 'DR' },
+  { id: 'u-anay', name: 'Anay Goenka', email: 'anay@gbm.ai', role: 'member', color: 'teal', initials: 'AG' },
+  { id: 'u-aria', name: 'Aria Chen', email: 'aria@gbm.ai', role: 'member', color: 'purple', initials: 'AC' },
+  { id: 'u-layla', name: 'Layla Kim', email: 'layla@gbm.ai', role: 'member', color: 'amber', initials: 'LK' },
+  { id: 'u-nina', name: 'Nina Torres', email: 'nina@gbm.ai', role: 'member', color: 'red', initials: 'NT' },
+  { id: 'u-shreya', name: 'Shreya Patel', email: 'shreya@gbm.ai', role: 'scrum_master', color: 'green', initials: 'SP' },
 ];
 
 // The current viewer in preview mode. Switch to Raphy so dashboards show admin view.
@@ -96,9 +96,9 @@ export const CURRENT_USER_ID = 'u-raphy';
 // ---------------------------------------------------------------------------
 export const mockProjects: MockProject[] = [
   {
-    id: 'p-yallo',
-    key: 'YALLO',
-    name: 'AI Curriculum 2.0',
+    id: 'p-gbm',
+    key: 'GBM',
+    name: 'GBM Curriculum 2.0',
     description:
       'Modular AI fluency programme for L&D teams. 12-track curriculum with adaptive paths, agent labs, and proctored capstones.',
     status: 'active',
@@ -112,7 +112,7 @@ export const mockProjects: MockProject[] = [
     id: 'p-nexus',
     key: 'NEX',
     name: 'NEXUS Platform',
-    description: 'Internal build of the project management platform that runs YALLO.',
+    description: 'Internal build of the project management platform that runs GBM.',
     status: 'active',
     color: '#7F77DD',
     created_by: 'u-marcus',
@@ -127,8 +127,8 @@ export const mockProjects: MockProject[] = [
 // ---------------------------------------------------------------------------
 export const mockSprints: MockSprint[] = [
   {
-    id: 's-yallo-14',
-    project_id: 'p-yallo',
+    id: 's-gbm-14',
+    project_id: 'p-gbm',
     name: 'Sprint 14 · Launch readiness',
     goal: 'Finish track 09–12 production builds, complete proctored capstone QA, and seed beta cohort 04.',
     status: 'active',
@@ -141,7 +141,7 @@ export const mockSprints: MockSprint[] = [
     id: 's-nex-2',
     project_id: 'p-nexus',
     name: 'Sprint 2 · Auth + core screens',
-    goal: 'User logs in and sees YALLO tasks. Auth UI complete, project + task views populated.',
+    goal: 'User logs in and sees GBM tasks. Auth UI complete, project + task views populated.',
     status: 'active',
     start_date: '2025-06-08',
     end_date: '2025-06-11',
@@ -151,15 +151,15 @@ export const mockSprints: MockSprint[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Tasks (YALLO + a few NEXUS for context)
+// Tasks (GBM + a few NEXUS for context)
 // ---------------------------------------------------------------------------
 export const mockTasks: MockTask[] = [
-  // ===== YALLO sprint 14 =====
+  // ===== GBM sprint 14 =====
   {
     id: 't-1',
-    task_key: 'YALLO-142',
-    project_id: 'p-yallo',
-    sprint_id: 's-yallo-14',
+    task_key: 'GBM-142',
+    project_id: 'p-gbm',
+    sprint_id: 's-gbm-14',
     title: 'Track 09 · prompt engineering capstone scaffold',
     description:
       'Build the proctored capstone scaffold for Track 09 (prompt engineering). Includes rubric upload, AI grader hook-in, and reviewer dual-pass UI.',
@@ -196,9 +196,9 @@ export const mockTasks: MockTask[] = [
   },
   {
     id: 't-2',
-    task_key: 'YALLO-143',
-    project_id: 'p-yallo',
-    sprint_id: 's-yallo-14',
+    task_key: 'GBM-143',
+    project_id: 'p-gbm',
+    sprint_id: 's-gbm-14',
     title: 'Adaptive path engine · cohort 04 dry run',
     description:
       'Dry-run the adaptive path engine against cohort 04 sample data (n=120). Surface any path collapse cases where the engine routes <3 modules.',
@@ -227,9 +227,9 @@ export const mockTasks: MockTask[] = [
   },
   {
     id: 't-3',
-    task_key: 'YALLO-144',
-    project_id: 'p-yallo',
-    sprint_id: 's-yallo-14',
+    task_key: 'GBM-144',
+    project_id: 'p-gbm',
+    sprint_id: 's-gbm-14',
     title: 'Reviewer onboarding video · record and cut',
     description: 'Record the 6-minute reviewer onboarding video. Cut, subtitle, and host on Mux. Embed in Track 09 reviewer view.',
     status: 'todo',
@@ -246,9 +246,9 @@ export const mockTasks: MockTask[] = [
   },
   {
     id: 't-4',
-    task_key: 'YALLO-145',
-    project_id: 'p-yallo',
-    sprint_id: 's-yallo-14',
+    task_key: 'GBM-145',
+    project_id: 'p-gbm',
+    sprint_id: 's-gbm-14',
     title: 'AI grader · prompt injection regression suite',
     description:
       'Build 24 test cases covering known prompt-injection vectors against the AI grader. Must pass on every PR touching the grader.',
@@ -276,9 +276,9 @@ export const mockTasks: MockTask[] = [
   },
   {
     id: 't-5',
-    task_key: 'YALLO-146',
-    project_id: 'p-yallo',
-    sprint_id: 's-yallo-14',
+    task_key: 'GBM-146',
+    project_id: 'p-gbm',
+    sprint_id: 's-gbm-14',
     title: 'Mobile cohort lobby · 375px lockup',
     description: 'Cohort lobby renders correctly at 375px. Avatar stack truncates, header pill stays single-line.',
     status: 'todo',
@@ -295,9 +295,9 @@ export const mockTasks: MockTask[] = [
   },
   {
     id: 't-6',
-    task_key: 'YALLO-147',
-    project_id: 'p-yallo',
-    sprint_id: 's-yallo-14',
+    task_key: 'GBM-147',
+    project_id: 'p-gbm',
+    sprint_id: 's-gbm-14',
     title: 'Capstone proctor heartbeat · reconnect logic',
     description:
       'Browser proctor heartbeat must reconnect on transient network loss without flagging the candidate. Backoff 1s→5s→15s.',
@@ -315,9 +315,9 @@ export const mockTasks: MockTask[] = [
   },
   {
     id: 't-7',
-    task_key: 'YALLO-148',
-    project_id: 'p-yallo',
-    sprint_id: 's-yallo-14',
+    task_key: 'GBM-148',
+    project_id: 'p-gbm',
+    sprint_id: 's-gbm-14',
     title: 'Beta cohort 04 · welcome email batch',
     description: 'Compose, A/B test, and queue the welcome email batch for cohort 04. Send window 2025-06-23 08:00 UTC.',
     status: 'todo',
@@ -334,9 +334,9 @@ export const mockTasks: MockTask[] = [
   },
   {
     id: 't-8',
-    task_key: 'YALLO-149',
-    project_id: 'p-yallo',
-    sprint_id: 's-yallo-14',
+    task_key: 'GBM-149',
+    project_id: 'p-gbm',
+    sprint_id: 's-gbm-14',
     title: 'RAG bibliography · module 11 source review',
     description: 'Review the 47 source citations the RAG layer is pulling for module 11. Flag any non-peer-reviewed material.',
     status: 'in_progress',
@@ -368,7 +368,7 @@ export const mockTasks: MockTask[] = [
     project_id: 'p-nexus',
     sprint_id: 's-nex-2',
     title: 'Auth screens A-01…A-04',
-    description: 'Login, register, forgot/reset password — matching YALLO theme.',
+    description: 'Login, register, forgot/reset password — matching GBM theme.',
     status: 'done',
     priority: 'high',
     type: 'feature',
@@ -406,7 +406,7 @@ export const mockTasks: MockTask[] = [
     project_id: 'p-nexus',
     sprint_id: 's-nex-2',
     title: 'Dashboard D-01 + project list P-01',
-    description: 'YALLO mock data drives dashboard stats, recent tasks, and project list.',
+    description: 'GBM mock data drives dashboard stats, recent tasks, and project list.',
     status: 'in_progress',
     priority: 'high',
     type: 'feature',
@@ -441,8 +441,8 @@ export const mockTasks: MockTask[] = [
   // ===== Backlog tasks (no sprint assignment yet) =====
   {
     id: 't-b1',
-    task_key: 'YALLO-160',
-    project_id: 'p-yallo',
+    task_key: 'GBM-160',
+    project_id: 'p-gbm',
     sprint_id: null,
     title: 'Cohort 05 onboarding email sequence · 7-email drip',
     description:
@@ -461,8 +461,8 @@ export const mockTasks: MockTask[] = [
   },
   {
     id: 't-b2',
-    task_key: 'YALLO-161',
-    project_id: 'p-yallo',
+    task_key: 'GBM-161',
+    project_id: 'p-gbm',
     sprint_id: null,
     title: 'Track 11 · reviewer rubric v2 (peer-grading)',
     description:
@@ -491,8 +491,8 @@ export const mockTasks: MockTask[] = [
   },
   {
     id: 't-b3',
-    task_key: 'YALLO-162',
-    project_id: 'p-yallo',
+    task_key: 'GBM-162',
+    project_id: 'p-gbm',
     sprint_id: null,
     title: 'AI grader · streaming token rate-limit',
     description:
@@ -511,8 +511,8 @@ export const mockTasks: MockTask[] = [
   },
   {
     id: 't-b4',
-    task_key: 'YALLO-163',
-    project_id: 'p-yallo',
+    task_key: 'GBM-163',
+    project_id: 'p-gbm',
     sprint_id: null,
     title: 'Mobile · capstone proctor PWA install prompt',
     description:
@@ -556,7 +556,7 @@ export const mockTasks: MockTask[] = [
     sprint_id: null,
     title: 'N-02 / N-03 Settings · profile + organisation',
     description:
-      'Two settings screens: user profile (avatar, name, anthropic key) and org settings (members, invites, default project). Strict YALLO design tokens.',
+      'Two settings screens: user profile (avatar, name, anthropic key) and org settings (members, invites, default project). Strict GBM design tokens.',
     status: 'todo',
     priority: 'high',
     type: 'feature',
