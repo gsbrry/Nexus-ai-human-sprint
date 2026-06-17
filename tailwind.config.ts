@@ -15,14 +15,6 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // NEXUS design tokens (raw)
-        // Primary brand color — tech blue (was GBM gold #1a73e8 → now #1a73e8)
-        primary: {
-          DEFAULT: '#1a73e8',
-          light: '#4a90e8',
-          dark: '#1557b0',
-          foreground: 'hsl(var(--primary-foreground))',
-        },
         // `gold` kept as a deprecated alias so existing components keep compiling.
         // New code should use `primary` / `primary-light` / `primary-dark`.
         gold: {
