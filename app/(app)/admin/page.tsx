@@ -105,7 +105,7 @@ function OverviewTab() {
             icon={Building2}
             trend={growthOrgs}
             data={platformMetrics.newOrgsDaily}
-            color="#D4A843"
+            color="#1a73e8"
           />
           <KpiCard
             label="MRR"
@@ -155,9 +155,9 @@ function OverviewTab() {
               </div>
               <StackedBar
                 segments={[
-                  { value: k.activeOrgs, label: 'Active', color: '#D4A843' },
+                  { value: k.activeOrgs, label: 'Active', color: '#1a73e8' },
                   { value: k.trialOrgs, label: 'Trial', color: '#7AA7E0' },
-                  { value: k.pastDueOrgs, label: 'Past due', color: '#F0C866' },
+                  { value: k.pastDueOrgs, label: 'Past due', color: '#4a90e8' },
                   { value: k.churnedOrgs, label: 'Churned', color: '#666' },
                 ]}
               />
@@ -566,7 +566,7 @@ function WatchRow({ org }: { org: MockOrg }) {
     : lowHealth
     ? Zap
     : Activity;
-  const tone = isPastDue || lowHealth ? '#F09595' : isTrial ? '#F0C866' : '#7AA7E0';
+  const tone = isPastDue || lowHealth ? '#F09595' : isTrial ? '#4a90e8' : '#7AA7E0';
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-[#0A0A0A] px-4 py-3">
@@ -603,11 +603,11 @@ function EventRow({ e, compact = false }: { e: (typeof platformEvents)[number]; 
     (typeof platformEvents)[number]['kind'],
     { icon: typeof Building2; color: string; label: string }
   > = {
-    org_created: { icon: PartyPopper, color: '#D4A843', label: 'org created' },
+    org_created: { icon: PartyPopper, color: '#1a73e8', label: 'org created' },
     plan_change: { icon: Layers, color: '#7DC8B8', label: 'plan change' },
     churn: { icon: TrendingDown, color: '#666', label: 'churn' },
     incident: { icon: AlertOctagon, color: '#F09595', label: 'incident' },
-    limit: { icon: Cpu, color: '#F0C866', label: 'limit' },
+    limit: { icon: Cpu, color: '#4a90e8', label: 'limit' },
     release: { icon: Rocket, color: '#9C7DD6', label: 'release' },
   };
   const m = meta[e.kind];
@@ -675,7 +675,7 @@ function HealthPill({ health, status }: { health: number; status: OrgStatus }) {
     );
   }
   const tone =
-    health >= 85 ? 'text-gold border-gold/30 bg-gold/10' : health >= 70 ? 'text-[#F0C866] border-[#F0C866]/30 bg-[#F0C866]/10' : 'text-[#F09595] border-[#F09595]/30 bg-[#F09595]/10';
+    health >= 85 ? 'text-gold border-gold/30 bg-gold/10' : health >= 70 ? 'text-[#4a90e8] border-[#4a90e8]/30 bg-[#4a90e8]/10' : 'text-[#F09595] border-[#F09595]/30 bg-[#F09595]/10';
   return (
     <span
       className={cn(

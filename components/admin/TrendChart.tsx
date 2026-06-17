@@ -15,7 +15,7 @@ export type TrendPoint = { date: string; value: number };
 export function TrendChart({
   data,
   height = 80,
-  color = '#D4A843',
+  color = '#1a73e8',
   yFormatter,
 }: {
   data: TrendPoint[];
@@ -58,7 +58,7 @@ export function TrendChart({
             fontFamily: 'DM Mono, ui-monospace',
             fontSize: 11,
           }}
-          labelStyle={{ color: '#D4A843', fontWeight: 700 }}
+          labelStyle={{ color: '#1a73e8', fontWeight: 700 }}
           itemStyle={{ color: '#FFFFFF' }}
           labelFormatter={(v: string) => format(new Date(v), 'dd MMM')}
           formatter={(v: number) => [yFormatter ? yFormatter(v) : v, '']}

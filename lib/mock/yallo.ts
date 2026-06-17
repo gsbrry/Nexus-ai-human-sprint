@@ -102,7 +102,7 @@ export const mockProjects: MockProject[] = [
     description:
       'Modular AI fluency programme for L&D teams. 12-track curriculum with adaptive paths, agent labs, and proctored capstones.',
     status: 'active',
-    color: '#D4A843',
+    color: '#1a73e8',
     created_by: 'u-raphy',
     start_date: '2025-04-01',
     target_date: '2025-08-30',

@@ -62,7 +62,7 @@ export const mockOrgs: MockOrg[] = [
     created_at: '2024-09-04T10:00:00Z',
     owner_name: 'Raphy Varghese',
     owner_initials: 'RV',
-    owner_color: '#D4A843',
+    owner_color: '#1a73e8',
     region: 'eu',
   },
   {
@@ -81,7 +81,7 @@ export const mockOrgs: MockOrg[] = [
     created_at: '2025-04-19T09:30:00Z',
     owner_name: 'Raphy Varghese',
     owner_initials: 'RV',
-    owner_color: '#D4A843',
+    owner_color: '#1a73e8',
     region: 'eu',
   },
   {
@@ -157,7 +157,7 @@ export const mockOrgs: MockOrg[] = [
     created_at: '2025-05-28T12:45:00Z',
     owner_name: 'Hana Okafor',
     owner_initials: 'HO',
-    owner_color: '#F0C866',
+    owner_color: '#4a90e8',
     region: 'eu',
   },
   {
@@ -233,7 +233,7 @@ export const mockOrgs: MockOrg[] = [
     created_at: '2024-03-22T08:00:00Z',
     owner_name: 'Anaïs Dubois',
     owner_initials: 'AD',
-    owner_color: '#D4A843',
+    owner_color: '#1a73e8',
     region: 'eu',
   },
   {

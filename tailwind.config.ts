@@ -15,15 +15,24 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // YALLO design tokens (raw)
+        // NEXUS design tokens (raw)
+        // Primary brand color — tech blue (was YALLO gold #1a73e8 → now #1a73e8)
+        primary: {
+          DEFAULT: '#1a73e8',
+          light: '#4a90e8',
+          dark: '#1557b0',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        // `gold` kept as a deprecated alias so existing components keep compiling.
+        // New code should use `primary` / `primary-light` / `primary-dark`.
         gold: {
-          DEFAULT: '#D4A843',
-          light: '#F0C866',
+          DEFAULT: '#1a73e8',
+          light: '#4a90e8',
         },
         dark: '#111111',
         offwhite: '#F4F4F2',
 
-        // shadcn-compatible semantic tokens mapped to YALLO
+        // shadcn-compatible semantic tokens mapped to NEXUS
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -32,6 +41,8 @@ const config: Config = {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
+          light: '#4a90e8',
+          dark: '#1557b0',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
