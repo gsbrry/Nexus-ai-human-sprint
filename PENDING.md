@@ -1,119 +1,127 @@
 # NEXUS · Pending Items & Test Checklist
 
-> Read this when you're back at the PC. Everything below is **deferred but unblocked** — the app
-> runs perfectly on YALLO mocks until you flip these on.
-
-Last updated: end of Sprint 4 · Phase 4B (jumping straight to Sprint 5 next).
+> Read this when you're back at the PC. Updated end of Sprint 5 wrap-up session.
 
 ---
 
-## 1. External API keys (block real integrations only)
+## 🟢 What works RIGHT NOW
 
-| # | Integration | Where it's used | What you need | Status |
-|---|---|---|---|---|
-| 1 | **Supabase** | DB, Auth, RLS for the entire app | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` in `app/.env.local` | ⏳ Pending |
-| 2 | **Anthropic Claude** | AI prompt generation (Sprint 3 import wizard), AI agents | `ANTHROPIC_API_KEY` (or per-user in `profiles.anthropic_api_key`) | ⏳ Pending |
-| 3 | **Resend** | N-04 invite emails, daily digest emails | `RESEND_API_KEY` + verified sender domain (or use `onboarding@resend.dev` for testing) | ⏳ Pending (Phase 4C skipped) |
-| 4 | **Telegram Bot** | Notification mirroring, invite pings | Bot token from @BotFather + per-user/org `chat_id` capture flow | ⏳ Pending (Phase 4C skipped) |
-
-> When you have a key, drop it into `app/.env.local` (NEVER `app/.env`), restart with
-> `sudo supervisorctl restart nextjs`, and the corresponding feature will swap from mock → live
-> automatically thanks to the `isAuthConfigured()` guard pattern.
-
----
-
-## 2. Phase 4C work (skipped, to resume later)
-
-These files **do not exist yet** — they will be created once you have the keys:
-
-- `app/api/integrations/resend/send/route.ts` — POST endpoint for transactional email
-- `app/api/integrations/telegram/send/route.ts` — POST endpoint for bot messages
-- `app/api/integrations/telegram/webhook/route.ts` — incoming webhook handler (for `/start`, chat_id capture)
-- Wire `Save` buttons in **Settings → API keys** so they POST to a real persistence layer (Supabase `profiles.anthropic_api_key` + `orgs.resend_key` + `orgs.telegram_bot_token`)
-- Replace mock `setTimeout(800)` in `InviteDialog.tsx` (`sendAll`) with real Resend + Telegram calls
-- Add per-user `notification_preferences` table writes from **Settings → Notifications** tab
-
-Resume by saying: **"Continue Phase 4C with [keys]"**.
+| Path | Mode | Notes |
+|---|---|---|
+| `/login` (demo mode) | ✅ Mock | Pick any of 8 teammates, instant in |
+| `/dashboard` (demo) | ✅ Mock | Role-aware (Member/SM/Admin/SA) |
+| `/dashboard` (real Supabase auth) | ✅ Real | Detects missing migrations + empty workspace gracefully |
+| `/projects`, `/sprints`, `/tasks`, `/velocity` | ✅ Both | Auto-branches: demo cookie → mock, real session → Supabase |
+| `/setup` wizard | ✅ Live | Detects which step you're on (env / auth / migrations / seed) and shows only that |
+| `/api/setup/seed` | ✅ Live | Idempotent — creates org + 2 projects + 2 sprints + 14 tasks for current user |
+| `/admin`, `/settings`, project/sprint **detail views** | ⏳ Mock only | Migration to real data deferred to next session |
 
 ---
 
-## 3. Supabase data integration (the big swap)
+## 🔑 External API keys still pending
 
-Right now every screen reads from `lib/mock/yallo.ts` and `lib/mock/notifications.ts`. When you
-drop Supabase env vars, the next agent should:
-
-1. **Run the 13 migrations** in `supabase/migrations/001_*.sql` through `013_*.sql`
-2. **Seed dev data** from `supabase/seeds/dev_seed.sql` (or generate from mocks)
-3. **Replace mocks file-by-file**:
-   - `app/(app)/dashboard/page.tsx` → server component reading from Supabase
-   - `app/(app)/projects/**`
-   - `app/(app)/sprints/**`
-   - `app/(app)/tasks/**`
-   - `app/(app)/velocity/**`
-   - `app/(app)/settings/**` (Members tab → `org_members`, Invites → new `invites` table)
-   - `components/notifications/NotificationBell.tsx` → real-time channel
-4. **Auth flip**: `lib/auth-config.ts` already gates this — remove the `isAuthConfigured()` short-circuits in the API routes once env is live.
-5. **RLS manual tests** (Nina's checklist — 4 scenarios):
-   - Member of org A cannot read tasks from org B
-   - Member can read all tasks in their own org
-   - Only `org_admin` can mutate org settings
-   - Service role bypasses RLS (sanity check for cron jobs)
+| # | Integration | What you need | Status |
+|---|---|---|---|
+| 1 | **Supabase** | Already provided ✅ but **migrations not yet run** | Run `cat /app/supabase/_bundle_schema.sql` and paste into Supabase SQL editor |
+| 2 | **Google OAuth** | OAuth client in Google Cloud Console + provider toggle in Supabase | See `/app/SETUP_SUPABASE.md` step 3 |
+| 3 | **Anthropic Claude** | `ANTHROPIC_API_KEY` (or per-user) for AI agents + Sprint 3 prompt gen | Pending |
+| 4 | **Resend** | `RESEND_API_KEY` + verified sender | Pending — Phase 4C |
+| 5 | **Telegram Bot** | Bot token from @BotFather + chat_id capture flow | Pending — Phase 4C |
 
 ---
 
-## 4. Testing matrix (do these BEFORE shipping to real users)
-
-### 4A. Backend testing (delegate to `deep_testing_backend_nextjs`)
-- [ ] All `/api/auth/*` routes (login, register, logout, forgot, reset) — once Supabase is on
-- [ ] All `/api/projects`, `/api/sprints`, `/api/tasks` CRUD + RLS
-- [ ] `/api/tasks/[id]/status` (Kanban drag-drop optimistic update)
-- [ ] `/api/import/json` (CSV → JSON pipeline + Claude prompt gen)
-- [ ] `/api/integrations/resend/send` + `telegram/send` (when 4C lands)
-- [ ] Pagination + filter edge cases on `/api/velocity` snapshots
-
-### 4B. Frontend testing (delegate to `deep_testing_frontend_nextjs` — needs your explicit OK each time)
-- [ ] Auth flow end-to-end (register → email confirm → profile setup → dashboard)
-- [ ] Project create → Sprint create → Tasks → Kanban drag → Done → Velocity rollup
-- [ ] CSV Import Wizard happy path + error states (malformed CSV, duplicate keys, AI prompt timeout)
-- [ ] Notification bell: filter pills, mark-all-read, click-through, unread badge math
-- [ ] Settings: every tab, every save button, Invite flow including the success state
-- [ ] Mobile responsiveness for all screens at 375px width
-
-### 4C. Manual sanity checks (you, eyeball)
-- [ ] YALLO dark theme (`#111`) is consistent across every page
-- [ ] Primary brand color (`#1a73e8` blue, was `#D4A843` gold) and Plus Jakarta Sans + DM Mono fonts intact
-- [ ] Role switcher (Member · SM · Admin in topbar preview mode) shows/hides correct nav items
-- [ ] Admin item only shows for `super_admin`
-
----
-
-## 5. Refactor / cleanup backlog (do AFTER Sprint 5)
-
-- [ ] Move mock data files out of `/lib/mock` and into a single `seedFromMock()` Supabase seed script
-- [ ] Split `/app/(app)/settings/page.tsx` (~600 lines) into per-tab files under `/components/settings/tabs/`
-- [ ] Extract `Mini`, `Stat`, `SectionHeader` repeated tile components into `/components/ui/stat-tile.tsx`
-- [ ] Audit unused `lib/validations/*` schemas after Supabase types are generated
-- [ ] Add real route handlers for the auth APIs (right now they 503 by design)
-
----
-
-## 6. Sprint 5 scope (current target)
-
-- **SA-01** Super admin · orgs list + drilldown (search, filter by plan, member count, MRR)
-- **SA-02** Super admin · platform metrics (orgs/day, MAU, AI spend, sprint completion rate)
-- **QA load testing** — k6 or artillery scripts hitting the public API routes
-
----
-
-## Quick resume commands when you're back
+## 🎯 Your immediate next steps (when back at PC)
 
 ```bash
-# Check what's running
-sudo supervisorctl status
-
-# Pull the latest mock-only build
-curl -sI http://localhost:3000/dashboard
-
-# Read this file
-cat /app/PENDING.md
+# 1. Sign in to Supabase SQL editor for your project:
+#    https://supabase.com/dashboard/project/pvmtmpuilfhkunpzeffw/sql/new
+# 2. Run this in your container terminal to dump the schema bundle:
+cat /app/supabase/_bundle_schema.sql
+# 3. Paste into the SQL editor → Run. (~2 sec)
+# 4. Open /register, create a real Supabase account
+# 5. Visit /setup — the wizard auto-detects you're at the "seed" step
+# 6. Click "Seed demo data" — workspace is provisioned
+# 7. Dashboard / Projects / Sprints / Tasks / Velocity all flip to real data
 ```
+
+If you ever want to go back to mock mode without losing your Supabase data:
+- Sign out → use Demo mode picker on /login → you're back on YALLO mocks instantly
+
+---
+
+## ⚠️ Screens still on mocks even when authenticated
+
+These will keep rendering mock data until I migrate them — deferred to the next session for scope reasons:
+
+- `/projects/[id]` — project detail (Kanban + task panel)
+- `/sprints/[id]` — sprint detail (Kanban + burndown)
+- `/sprints/backlog` — global backlog
+- `/tasks/[id]` — task detail
+- `/settings` — all 5 tabs (Profile, Org, Members, API keys, Notifications)
+- `/admin` — SA-01/SA-02 (orgs list + platform metrics)
+- `/import` — CSV import wizard (writes to mocks, not real DB)
+- `/api/auth/google` callback handling — works to redirect, but profile sync needs Supabase provider config first
+
+**The architecture is in place**: each of these can be migrated with the same `useRealData()` branching pattern used in Dashboard/Projects/Sprints/Tasks/Velocity. ~15 min per screen.
+
+---
+
+## 🧪 Testing matrix
+
+### Backend (delegate to `deep_testing_backend_nextjs` once auth is fully live)
+- [ ] `/api/auth/*` end-to-end (register → confirm → login → logout)
+- [ ] `/api/setup/seed` idempotency + RLS scoping
+- [ ] `/api/projects`, `/api/sprints`, `/api/tasks` CRUD respect RLS
+- [ ] `/api/tasks/[id]/status` optimistic update
+- [ ] `/api/import/json` CSV pipeline + Claude prompt gen
+- [ ] `/api/integrations/resend/send` + `telegram/send` (Phase 4C)
+
+### Frontend (delegate to `deep_testing_frontend_nextjs` only with your explicit OK each time)
+- [ ] Demo login picker → all 8 users
+- [ ] Real Supabase signup → setup wizard → seed → dashboard
+- [ ] Each screen renders correctly in BOTH demo and real modes
+- [ ] Role switcher (Member/SM/Admin/SA) hides/shows correct nav items
+- [ ] Mobile responsiveness at 375px
+
+### Manual sanity
+- [ ] Primary brand color (`#1a73e8` blue) consistent everywhere
+- [ ] Plus Jakarta Sans + DM Mono fonts intact
+- [ ] No console errors on any page
+- [ ] Notification bell badge math correct
+- [ ] Demo cookie cleared on "Exit demo mode"
+
+---
+
+## 🧹 Refactor / cleanup backlog (do AFTER finishing Supabase swap)
+
+- [ ] Rename leftover `text-gold` / `bg-gold` / `border-gold` → `text-primary` / `bg-primary` / `border-primary` (50+ occurrences, all aliased so no visual change, just semantic cleanup)
+- [ ] Split 600-line `settings/page.tsx` into per-tab files under `/components/settings/tabs/`
+- [ ] Extract `Mini`, `Stat`, `SectionHeader`, `Kpi` repeated tiles into `/components/ui/stat-tile.tsx`
+- [ ] Audit unused `lib/validations/*` schemas after Supabase types regenerate
+- [ ] Move `lib/mock/*` files to `lib/mock/` subdir (already there) and tag them deprecated in JSDoc
+- [ ] Generate fresh `types/database.ts` from real schema with `npx supabase gen types typescript`
+
+---
+
+## 📂 Important files for the next session
+
+| File | What it is |
+|---|---|
+| `/app/SETUP_SUPABASE.md` | Step-by-step setup guide (Supabase + Google OAuth) |
+| `/app/DESIGN_TOKENS.md` | Brand color spec — **always read before adding new screens** |
+| `/app/PENDING.md` | This file |
+| `/app/supabase/_bundle_schema.sql` | All 13 migrations in one file — paste into SQL editor |
+| `/app/CLAUDE.md` | Master prompt / persona instructions |
+| `/app/lib/server/feature-flag.ts` | `useRealData()` helper — the pattern for any new screen migration |
+| `/app/components/dashboard/RealDashboard.tsx` | Reference implementation of a real-Supabase server component |
+| `/app/components/projects/RealProjectsList.tsx` | Another reference |
+| `/app/components/sprints/RealSprintsList.tsx` | Another reference |
+| `/app/components/tasks/RealMyTasks.tsx` | Another reference |
+| `/app/components/velocity/RealVelocity.tsx` | Another reference |
+
+---
+
+## 🔐 Security reminder
+
+You shared `sb_secret_*` in chat. Once everything works end-to-end:
+**Supabase → Settings → API → Rotate service_role** (30 seconds, zero downtime) and update `/app/.env.local` with the new value.
