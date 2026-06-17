@@ -10,6 +10,7 @@ import {
   Settings,
   Shield,
   Upload,
+  Wrench,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/Logo';
@@ -23,7 +24,8 @@ const NAV = [
   { href: '/tasks', label: 'My tasks', code: '05', icon: ListChecks },
   { href: '/velocity', label: 'Velocity', code: '06', icon: TrendingUp },
   { href: '/settings', label: 'Settings', code: '07', icon: Settings },
-  { href: '/admin', label: 'Admin', code: '08', icon: Shield, role: 'super_admin' as const },
+  { href: '/setup', label: 'Setup', code: '08', icon: Wrench },
+  { href: '/admin', label: 'Admin', code: '09', icon: Shield, role: 'super_admin' as const },
 ];
 
 export function NavList({
@@ -51,7 +53,7 @@ export function NavList({
             className={cn(
               'group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
               active
-                ? 'bg-gold/10 text-gold border-l-2 border-gold pl-[10px]'
+                ? 'bg-primary/10 text-primary border-l-2 border-primary pl-[10px]'
                 : 'text-muted-foreground hover:bg-card hover:text-foreground'
             )}
           >
