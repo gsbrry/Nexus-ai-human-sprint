@@ -43,7 +43,8 @@ export async function RealProjectsList() {
     .eq('org_id', active.org_id)
     .eq('status', 'active');
 
-  const sprintByProject: Record<string, (typeof sprints)[number]> = {};
+  type SprintRow = NonNullable<typeof sprints>[number];
+  const sprintByProject: Record<string, SprintRow> = {};
   for (const s of sprints ?? []) sprintByProject[s.project_id as string] = s;
 
   return (

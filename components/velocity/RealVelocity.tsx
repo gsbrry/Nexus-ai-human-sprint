@@ -11,24 +11,26 @@ export async function RealVelocity() {
   const supabase = createClient();
 
   // Closed sprints + their per-task points
-  const { data: sprints } = await supabase
+  const { data: sprintsData } = await supabase
     .from('sprints')
     .select('id, name, sprint_number, status, end_date, capacity_points, projects(key, color)')
     .eq('org_id', active.org_id)
     .in('status', ['active', 'closed'])
     .order('start_date', { ascending: false })
     .limit(20);
+  const sprints = sprintsData ?? [];
 
-  const { data: tasks } = await supabase
+  const { data: tasksData } = await supabase
     .from('tasks')
     .select('sprint_id, status, story_points')
     .eq('org_id', active.org_id)
     .is('deleted_at', null);
+  const tasks = tasksData ?? [];
 
   const rollup: Record<string, { committed: number; completed: number; tasks: number }> = {};
-  for (const t of tasks ?? []) {
+  for (const t of tasks) {
     if (!t.sprint_id) continue;
-    const sid = t.sprint_id as string;
+    const sid = t.sprint_id;
     if (!rollup[sid]) rollup[sid] = { committed: 0, completed: 0, tasks: 0 };
     rollup[sid].committed += t.story_points ?? 0;
     rollup[sid].tasks++;
@@ -51,16 +53,16 @@ export async function RealVelocity() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard label="Sprints tracked" value={(sprints?.length ?? 0).toString()} />
+        <KpiCard label="Sprints tracked" value={sprints.length.toString()} />
         <KpiCard label="Avg completed" value={`${avg.toFixed(1)} pts`} tone="gold" />
         <KpiCard label="Best sprint" value={`${maxCompleted} pts`} />
-        <KpiCard label="Total tasks" value={(tasks?.length ?? 0).toString()} />
+        <KpiCard label="Total tasks" value={tasks.length.toString()} />
       </div>
 
       <Card>
         <CardContent className="p-5 space-y-3">
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">V-02 · Per-sprint breakdown</div>
-          {!sprints || sprints.length === 0 ? (
+          {sprints.length === 0 ? (
             <div className="rounded-md border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">
               No sprints with data yet.
             </div>
@@ -69,7 +71,7 @@ export async function RealVelocity() {
               {sprints.map((s) => {
                 const r = rollup[s.id] ?? { committed: 0, completed: 0, tasks: 0 };
                 const pct = r.committed > 0 ? (r.completed / r.committed) * 100 : 0;
-                const proj = s.projects as unknown as { key: string; color: string | null } | null;
+                const proj = Array.isArray(s.projects) ? s.projects[0] : s.projects;
                 return (
                   <li key={s.id} className="rounded-md border border-border bg-[#0A0A0A] p-4 space-y-2">
                     <div className="flex items-center justify-between flex-wrap gap-2">

@@ -5,12 +5,15 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/database';
+
+// NOTE: We intentionally don't pass a Database generic here — the real generated
+// types aren't in the repo yet (see types/database.ts). Until they are, calls
+// return permissive row types instead of narrowing to `never`.
 
 export function createClient() {
   const cookieStore = cookies();
 
-  return createServerClient<Database>(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -42,7 +45,7 @@ export function createClient() {
  * background jobs). Never return this client or its key to the browser.
  */
 export function createServiceClient() {
-  return createSupabaseClient<Database>(
+  return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {

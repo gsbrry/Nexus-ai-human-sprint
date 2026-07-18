@@ -18,7 +18,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
+import { z } from 'zod';
 import { taskCreateSchema, type TaskCreateInput } from '@/lib/validations/task';
+
+type TaskFormValues = z.input<typeof taskCreateSchema>;
 import {
   mockProjects,
   mockSprints,
@@ -62,7 +65,7 @@ export function TaskFormDialog({
     watch,
     setValue,
     formState: { errors },
-  } = useForm<TaskCreateInput>({
+  } = useForm<TaskFormValues, unknown, TaskCreateInput>({
     resolver: zodResolver(taskCreateSchema),
     defaultValues: {
       project_id: initial?.project_id ?? defaultProjectId ?? mockProjects[0].id,
@@ -214,7 +217,7 @@ export function TaskFormDialog({
               <Label>Type</Label>
               <PillPicker
                 items={TYPES.map((t) => ({ value: t, label: t }))}
-                value={watchType}
+                value={watchType ?? 'feature'}
                 onChange={(v) => setValue('type', v as MockTaskType)}
               />
             </div>
@@ -222,7 +225,7 @@ export function TaskFormDialog({
               <Label>Priority</Label>
               <PillPicker
                 items={PRIORITIES.map((p) => ({ value: p, label: p }))}
-                value={watchPriority}
+                value={watchPriority ?? 'medium'}
                 onChange={(v) => setValue('priority', v as MockTaskPriority)}
               />
             </div>
@@ -230,7 +233,7 @@ export function TaskFormDialog({
               <Label>Status</Label>
               <PillPicker
                 items={STATUSES.map((s) => ({ value: s, label: s.replace('_', ' ') }))}
-                value={watchStatus}
+                value={watchStatus ?? 'todo'}
                 onChange={(v) => setValue('status', v as MockTaskStatus)}
               />
             </div>

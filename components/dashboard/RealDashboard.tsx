@@ -75,7 +75,10 @@ export async function RealDashboard() {
   }
 
   const orgId = membership.org_id;
-  const org = membership.organisations as { id: string; slug: string; name: string } | null;
+  const orgRaw = membership.organisations;
+  const org = (Array.isArray(orgRaw) ? orgRaw[0] : orgRaw) as
+    | { id: string; slug: string; name: string }
+    | null;
 
   // Parallel fetch dashboard data (RLS scoped to this user's orgs)
   const [
@@ -303,20 +306,33 @@ export async function RealDashboard() {
               </div>
             ) : (
               <ul className="space-y-1.5">
-                {(myTasks as { id: string; task_key: string; title: string; priority: string; story_points: number | null; projects: { key: string; color: string | null } | null }[]).map((t) => (
-                  <li key={t.id} className="flex items-center gap-2 py-1.5 border-b border-border last:border-b-0">
-                    <span
-                      className="font-mono text-[9px] uppercase tracking-[0.12em] shrink-0"
-                      style={{ color: t.projects?.color ?? '#888' }}
-                    >
-                      {t.task_key}
-                    </span>
-                    <span className="text-[12px] truncate flex-1">{t.title}</span>
-                    {t.story_points && (
-                      <span className="font-mono text-[10px] text-muted-foreground shrink-0">{t.story_points}p</span>
-                    )}
-                  </li>
-                ))}
+                {(myTasks as Array<{
+                  id: string;
+                  task_key: string;
+                  title: string;
+                  priority: string;
+                  story_points: number | null;
+                  projects:
+                    | { key: string; color: string | null }
+                    | Array<{ key: string; color: string | null }>
+                    | null;
+                }>).map((t) => {
+                  const proj = Array.isArray(t.projects) ? t.projects[0] : t.projects;
+                  return (
+                    <li key={t.id} className="flex items-center gap-2 py-1.5 border-b border-border last:border-b-0">
+                      <span
+                        className="font-mono text-[9px] uppercase tracking-[0.12em] shrink-0"
+                        style={{ color: proj?.color ?? '#888' }}
+                      >
+                        {t.task_key}
+                      </span>
+                      <span className="text-[12px] truncate flex-1">{t.title}</span>
+                      {t.story_points && (
+                        <span className="font-mono text-[10px] text-muted-foreground shrink-0">{t.story_points}p</span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </CardContent>

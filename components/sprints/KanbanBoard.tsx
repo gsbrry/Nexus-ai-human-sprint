@@ -104,14 +104,8 @@ export function KanbanBoard({
         return next;
       })
     );
-    // Persist to Supabase (no-op if real auth not active; mock keeps local state)
-    fetch(`/api/tasks/${taskId}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: targetCol }),
-    }).catch(() => {
-      /* swallow — mock mode returns 503 which is fine for demo */
-    });
+    // When wired to Supabase:
+    // await fetch(`/api/tasks/${taskId}/status`, { method: 'PATCH', body: JSON.stringify({ status: targetCol }) });
   }
 
   function openSheet(task: MockTask) {
