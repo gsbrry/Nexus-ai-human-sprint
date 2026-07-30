@@ -207,6 +207,17 @@ test_plan:
   test_priority: "high_first"
 
 agent_communication:
+  - agent: "testing"
+    message: |
+      Environment limitation: this test container has no external network to reach
+      the live Supabase project. Only static checks were possible:
+      - All 4 routes compile cleanly.
+      - All 4 routes return 401 for unauth (verified via curl).
+      - Code review shows correct masking, slug normalization, role validation,
+        and soft-delete logic.
+      Live persistence, RLS enforcement, and metadata-merge behaviour REMAIN
+      UNVERIFIED — must be validated on the deployed preview/prod URL with a
+      real Supabase JWT.
   - agent: "main"
     message: |
       Just finished the "Real Settings" work (option A per user).
