@@ -2,6 +2,32 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { isAuthConfigured } from '@/lib/auth-config';
 import { taskUpdateSchema } from '@/lib/validations/task';
+import { requireOrg, isResponse, jsonError } from '@/lib/server/api';
+
+export const dynamic = 'force-dynamic';
+
+/** GET /api/tasks/[id] — T-03 task detail, including its comment thread. */
+export async function GET(_request: Request, { params }: { params: { id: string } }) {
+  const ctx = await requireOrg();
+  if (isResponse(ctx)) return ctx;
+
+  const { data, error } = await ctx.supabase
+    .from('tasks')
+    .select(
+      'id, task_key, title, description, project_id, sprint_id, status, priority, type, ' +
+        'story_points, is_blocked, blocker_reason, assignee_id, reporter_id, due_date, ' +
+        'created_at, completed_at, projects(id, key, name)'
+    )
+    .eq('id', params.id)
+    .eq('org_id', ctx.orgId)
+    .is('deleted_at', null)
+    .maybeSingle();
+
+  if (error) return jsonError(error.message, 400);
+  if (!data) return jsonError('Task not found', 404);
+
+  return NextResponse.json({ task: data });
+}
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   if (!isAuthConfigured()) {
@@ -40,16 +66,20 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 }
 
 export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
-  if (!isAuthConfigured()) {
-    return NextResponse.json({ error: 'Auth not configured.' }, { status: 503 });
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase: any = createClient();
+  const ctx = await requireOrg();
+  if (isResponse(ctx)) return ctx;
+
   // Soft delete per @David's rule — never hard delete tasks.
-  const { error } = await supabase
+  const { data, error } = await ctx.supabase
     .from('tasks')
     .update({ deleted_at: new Date().toISOString() })
-    .eq('id', params.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ ok: true });
+    .eq('id', params.id)
+    .eq('org_id', ctx.orgId)
+    .is('deleted_at', null)
+    .select('id')
+    .maybeSingle();
+
+  if (error) return jsonError(error.message, 400);
+  if (!data) return jsonError('Task not found', 404);
+  return NextResponse.json({ ok: true, id: data.id });
 }

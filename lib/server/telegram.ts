@@ -70,6 +70,37 @@ export async function getBotIdentity(botToken: string): Promise<{ username: stri
   return { username: json.result.username ?? 'unknown', name: json.result.first_name ?? 'Bot' };
 }
 
+/**
+ * Points the bot at this deployment's webhook, passing the secret Telegram will
+ * then echo on every delivery. Skipped when NEXT_PUBLIC_APP_URL is unset (local
+ * dev has no public URL), which leaves outbound alerts working either way.
+ */
+export async function registerTelegramWebhook(
+  botToken: string,
+  orgId: string,
+  secret: string
+): Promise<{ registered: boolean; reason?: string }> {
+  const base = process.env.NEXT_PUBLIC_APP_URL;
+  if (!base) return { registered: false, reason: 'NEXT_PUBLIC_APP_URL is not set' };
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        url: `${base}/api/notifications/telegram-webhook?org=${orgId}`,
+        secret_token: secret,
+        allowed_updates: ['message'],
+      }),
+    });
+    const json = (await res.json().catch(() => null)) as { ok?: boolean; description?: string } | null;
+    if (!res.ok || !json?.ok) return { registered: false, reason: json?.description ?? 'setWebhook failed' };
+    return { registered: true };
+  } catch (e) {
+    return { registered: false, reason: e instanceof Error ? e.message : 'setWebhook failed' };
+  }
+}
+
 export async function sendTelegramMessage(botToken: string, chatId: string, text: string) {
   const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: 'POST',

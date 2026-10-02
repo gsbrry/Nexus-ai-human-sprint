@@ -4,6 +4,7 @@ import { requireOrg, isResponse, jsonError, hasRole } from '@/lib/server/api';
 import {
   clearTelegramBotToken,
   getBotIdentity,
+  registerTelegramWebhook,
   saveTelegramBotToken,
 } from '@/lib/server/telegram';
 
@@ -60,13 +61,23 @@ export async function PUT(request: Request) {
     return jsonError(e instanceof Error ? e.message : 'Telegram rejected that bot token', 400);
   }
 
+  let secret: string;
   try {
-    await saveTelegramBotToken(ctx.orgId, parsed.data.bot_token, ctx.userId);
+    secret = await saveTelegramBotToken(ctx.orgId, parsed.data.bot_token, ctx.userId);
   } catch (e) {
     return jsonError(e instanceof Error ? e.message : 'Could not save the bot token', 400);
   }
 
-  return NextResponse.json({ ok: true, has_telegram_bot_token: true, bot: identity });
+  // Outbound alerts work regardless; the webhook only adds inbound /start.
+  const webhook = await registerTelegramWebhook(parsed.data.bot_token, ctx.orgId, secret);
+
+  return NextResponse.json({
+    ok: true,
+    has_telegram_bot_token: true,
+    bot: identity,
+    webhook_registered: webhook.registered,
+    webhook_note: webhook.reason ?? null,
+  });
 }
 
 /** DELETE — disconnect the workspace bot. */
