@@ -2,7 +2,7 @@
 import { useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 import { KanbanCard } from './KanbanCard';
-import type { MockTask, MockTaskStatus } from '@/lib/mock/gbm';
+import type { BoardStatus, BoardTask, BoardUser } from '@/lib/board';
 
 export function KanbanColumn({
   id,
@@ -11,16 +11,18 @@ export function KanbanColumn({
   points,
   tone,
   tasks,
+  users,
   onCardClick,
   activeId,
 }: {
-  id: MockTaskStatus;
+  id: BoardStatus;
   label: string;
   count: number;
   points: number;
   tone: string;
-  tasks: MockTask[];
-  onCardClick: (t: MockTask) => void;
+  tasks: BoardTask[];
+  users: Map<string, BoardUser>;
+  onCardClick: (t: BoardTask) => void;
   activeId: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
@@ -31,7 +33,7 @@ export function KanbanColumn({
       className={cn(
         'shrink-0 w-[280px] sm:w-[300px] rounded-xl border bg-[#0A0A0A]/60 transition-colors flex flex-col',
         tone,
-        isOver ? 'border-gold/60 bg-gold/5' : ''
+        isOver ? 'border-primary/60 bg-primary/5' : ''
       )}
     >
       <div className="px-3 py-2.5 border-b border-border flex items-center justify-between">
@@ -47,7 +49,7 @@ export function KanbanColumn({
           <div
             className={cn(
               'rounded-lg border border-dashed border-border/60 px-3 py-8 text-center font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground',
-              isOver && 'border-gold/60 text-gold'
+              isOver && 'border-primary/60 text-primary'
             )}
           >
             {isOver ? 'Drop here' : 'Empty'}
@@ -57,6 +59,7 @@ export function KanbanColumn({
             <KanbanCard
               key={t.id}
               task={t}
+              assignee={t.assignee_id ? users.get(t.assignee_id) : undefined}
               dimmed={activeId === t.id}
               onClick={() => onCardClick(t)}
             />

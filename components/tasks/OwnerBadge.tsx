@@ -1,8 +1,8 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { MockUser } from '@/lib/mock/gbm';
+import type { BoardUser } from '@/lib/board';
 
-export function OwnerBadge({ user, className }: { user: MockUser | undefined; className?: string }) {
+export function OwnerBadge({ user, className }: { user: BoardUser | undefined; className?: string }) {
   if (!user) {
     return (
       <Badge variant="default" className={cn(className)}>
@@ -17,7 +17,7 @@ export function OwnerBadge({ user, className }: { user: MockUser | undefined; cl
   );
 }
 
-export function OwnerAvatar({ user, size = 24 }: { user: MockUser | undefined; size?: number }) {
+export function OwnerAvatar({ user, size = 24 }: { user: BoardUser | undefined; size?: number }) {
   const colorMap: Record<string, string> = {
     gold: 'bg-gold/25 text-gold',
     blue: 'bg-[#378ADD]/25 text-[#7AB4EA]',

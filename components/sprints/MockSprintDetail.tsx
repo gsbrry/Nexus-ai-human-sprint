@@ -14,11 +14,13 @@ import { BurndownChart, buildBurndownData } from '@/components/sprints/BurndownC
 import { TaskFormDialog } from '@/components/tasks/TaskFormDialog';
 import {
   mockSprints,
+  mockUsers,
   projectById,
   tasksForSprint,
   userById,
   type MockTask,
 } from '@/lib/mock/gbm';
+import { applyStatusChange } from '@/lib/board';
 import { cn } from '@/lib/utils';
 
 export function MockSprintDetail({ params }: { params: { id: string } }) {
@@ -164,7 +166,14 @@ export function MockSprintDetail({ params }: { params: { id: string } }) {
       </Card>
 
       {view === 'board' ? (
-        <KanbanBoard tasks={tasks} onTasksChange={setTasks} />
+        <KanbanBoard
+          tasks={tasks}
+          users={mockUsers}
+          projectName={project.name}
+          onStatusChange={(taskId, status) =>
+            setTasks((prev) => applyStatusChange(prev, taskId, status))
+          }
+        />
       ) : (
         <div className="space-y-6">
           {Object.entries(byAssignee)

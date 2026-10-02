@@ -1,32 +1,18 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { ArrowLeft, AlertOctagon, CheckCircle2, CircleDashed, Eye, ListTodo, Target } from 'lucide-react';
+import { ArrowLeft, AlertOctagon, CheckCircle2, LayoutGrid, ListTodo, Target } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BurndownChart, buildBurndownData } from '@/components/sprints/BurndownChart';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveOrg } from '@/lib/server/feature-flag';
 import { EmptyOrgPrompt } from '@/components/setup/EmptyOrgPrompt';
+import { LiveKanbanBoard } from '@/components/sprints/LiveKanbanBoard';
+import { fetchOrgUsers } from '@/lib/server/org-users';
+import type { BoardTask } from '@/lib/board';
 import { cn } from '@/lib/utils';
 
-type Task = {
-  id: string;
-  task_key: string;
-  title: string;
-  status: 'todo' | 'in_progress' | 'in_review' | 'blocked' | 'done';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  story_points: number | null;
-  is_blocked: boolean;
-  assignee_id: string | null;
-};
-
-const COLUMNS: { key: Task['status']; label: string }[] = [
-  { key: 'todo', label: 'To do' },
-  { key: 'in_progress', label: 'In progress' },
-  { key: 'in_review', label: 'In review' },
-  { key: 'done', label: 'Done' },
-];
 
 export async function RealSprintDetail({ sprintId }: { sprintId: string }) {
   const active = await getActiveOrg();
@@ -43,11 +29,24 @@ export async function RealSprintDetail({ sprintId }: { sprintId: string }) {
 
   const { data: tasks } = await supabase
     .from('tasks')
-    .select('id, task_key, title, status, priority, story_points, is_blocked, assignee_id')
+    .select(
+      'id, task_key, title, description, project_id, sprint_id, status, priority, type, ' +
+        'story_points, is_blocked, blocker_reason, assignee_id, reporter_id, due_date, ' +
+        'created_at, completed_at, comments(count)'
+    )
     .eq('sprint_id', sprintId)
     .is('deleted_at', null)
-    .order('priority', { ascending: false });
-  const taskList = (tasks ?? []) as Task[];
+    .order('position', { ascending: true });
+
+  // `comments(count)` arrives as [{ count: n }]; flatten it onto the board task.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const taskList: BoardTask[] = (tasks ?? []).map((t: any) => ({
+    ...t,
+    comment_count: Array.isArray(t.comments) ? t.comments[0]?.count ?? 0 : 0,
+    comments: undefined,
+  }));
+
+  const users = await fetchOrgUsers(supabase, active.org_id);
 
   const totalPts = taskList.reduce((s, t) => s + (t.story_points ?? 0), 0);
   const donePts = taskList.filter((t) => t.status === 'done').reduce((s, t) => s + (t.story_points ?? 0), 0);
@@ -123,58 +122,16 @@ export async function RealSprintDetail({ sprintId }: { sprintId: string }) {
           <div className="flex items-center justify-between">
             <div>
               <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">T-02 · Board</div>
-              <div className="text-base font-bold">Tasks by status</div>
+              <div className="text-base font-bold">Kanban</div>
             </div>
             <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-              <Eye className="size-3 inline mr-1" />
-              Read-only · drag-drop coming
+              <LayoutGrid className="size-3 inline mr-1" />
+              Drag a card to change status
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {COLUMNS.map((col) => {
-              const colTasks = taskList.filter((t) => t.status === col.key || (col.key === 'todo' && t.status === 'blocked'));
-              return (
-                <div key={col.key} className="rounded-md border border-border bg-[#0A0A0A] p-3 min-h-[120px]">
-                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-border">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{col.label}</span>
-                    <Badge variant="default" className="font-mono">{colTasks.length}</Badge>
-                  </div>
-                  <div className="space-y-2">
-                    {colTasks.length === 0 ? (
-                      <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/60 py-3 text-center">empty</div>
-                    ) : (
-                      colTasks.map((t) => <TaskCard key={t.id} task={t} />)
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <LiveKanbanBoard initialTasks={taskList} users={users} projectName={proj?.name} />
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-function TaskCard({ task }: { task: Task }) {
-  return (
-    <div className={cn(
-      'rounded-md border bg-card p-2.5 space-y-1.5',
-      task.is_blocked ? 'border-destructive/40' : 'border-border'
-    )}>
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground">{task.task_key}</span>
-        {task.story_points && (
-          <span className="font-mono text-[10px] text-muted-foreground">{task.story_points}p</span>
-        )}
-      </div>
-      <div className="text-[12px] font-medium leading-snug line-clamp-2">{task.title}</div>
-      <div className="flex items-center gap-1 flex-wrap">
-        {task.is_blocked && <Badge variant="red" className="font-mono">blocked</Badge>}
-        <Badge variant={task.priority === 'critical' ? 'red' : task.priority === 'high' ? 'gold' : 'default'} className="font-mono">
-          {task.priority}
-        </Badge>
-      </div>
     </div>
   );
 }

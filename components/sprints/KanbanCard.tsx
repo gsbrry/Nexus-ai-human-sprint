@@ -5,20 +5,22 @@ import { AlertTriangle, GripVertical, MessageSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
 import { PriorityDot } from '@/components/tasks/StatusBadge';
-import { userById, type MockTask } from '@/lib/mock/gbm';
+import { commentCount, type BoardTask, type BoardUser } from '@/lib/board';
 import { cn } from '@/lib/utils';
 
 export function KanbanCard({
   task,
+  assignee,
   dimmed,
   onClick,
 }: {
-  task: MockTask;
+  task: BoardTask;
+  assignee?: BoardUser;
   dimmed?: boolean;
   onClick?: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id });
-  const assignee = userById(task.assignee_id);
+  const comments = commentCount(task);
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -30,7 +32,7 @@ export function KanbanCard({
       style={style}
       className={cn(
         'group relative rounded-lg border bg-card transition-colors',
-        isDragging ? 'opacity-30 border-gold/40' : 'border-border hover:border-gold/30',
+        isDragging ? 'opacity-30 border-primary/40' : 'border-border hover:border-primary/30',
         dimmed && 'opacity-30',
         task.is_blocked && 'border-[#E24B4A]/30'
       )}
@@ -50,7 +52,7 @@ export function KanbanCard({
       >
         <div className="flex items-center gap-1.5 flex-wrap">
           <PriorityDot priority={task.priority} />
-          <span className="font-mono text-[10px] font-semibold text-gold">{task.task_key}</span>
+          <span className="font-mono text-[10px] font-semibold text-primary">{task.task_key}</span>
           {task.is_blocked && (
             <Badge variant="red" className="ml-auto">
               <AlertTriangle className="size-2.5 mr-1" />
@@ -65,10 +67,10 @@ export function KanbanCard({
         <div className="text-[13px] font-medium leading-snug line-clamp-2">{task.title}</div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {task.comments.length > 0 && (
+            {comments > 0 && (
               <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground font-mono">
                 <MessageSquare className="size-3" />
-                {task.comments.length}
+                {comments}
               </span>
             )}
             <span className="font-mono text-[10px] text-muted-foreground">{task.story_points ?? '—'} pts</span>

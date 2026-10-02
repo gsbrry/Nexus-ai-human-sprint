@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
 import { PriorityDot, StatusBadge } from '@/components/tasks/StatusBadge';
 import { TaskDetailSheet } from '@/components/tasks/TaskDetailSheet';
-import { userById, type MockTask } from '@/lib/mock/gbm';
+import { mockUsers, projectById, userById, type MockTask } from '@/lib/mock/gbm';
 import { cn } from '@/lib/utils';
 
 export function TaskList({
@@ -42,7 +42,13 @@ export function TaskList({
             <TaskCard key={t.id} task={t} onClick={() => openTask(t)} />
           ))}
         </div>
-        <TaskDetailSheet task={active} open={open} onOpenChange={setOpen} />
+        <TaskDetailSheet
+          task={active}
+          users={mockUsers}
+          projectName={active ? projectById(active.project_id)?.name : undefined}
+          open={open}
+          onOpenChange={setOpen}
+        />
       </>
     );
   }
@@ -113,7 +119,13 @@ export function TaskList({
         ))}
       </div>
 
-      <TaskDetailSheet task={active} open={open} onOpenChange={setOpen} />
+      <TaskDetailSheet
+          task={active}
+          users={mockUsers}
+          projectName={active ? projectById(active.project_id)?.name : undefined}
+          open={open}
+          onOpenChange={setOpen}
+        />
     </>
   );
 }
