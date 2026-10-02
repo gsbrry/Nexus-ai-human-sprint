@@ -2,7 +2,7 @@
 import { useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 import { KanbanCard } from './KanbanCard';
-import type { BoardStatus, BoardTask, BoardUser } from '@/lib/board';
+import { ownerId, type BoardStatus, type BoardTask, type BoardUser } from '@/lib/board';
 
 export function KanbanColumn({
   id,
@@ -59,7 +59,7 @@ export function KanbanColumn({
             <KanbanCard
               key={t.id}
               task={t}
-              assignee={t.assignee_id ? users.get(t.assignee_id) : undefined}
+              assignee={users.get(ownerId(t) ?? '')}
               dimmed={activeId === t.id}
               onClick={() => onCardClick(t)}
             />

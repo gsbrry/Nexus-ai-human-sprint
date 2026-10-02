@@ -19,12 +19,16 @@ const createSchema = z.object({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function toBoardComment(row: any): BoardComment {
   const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+  const agent = Array.isArray(row.agents) ? row.agents[0] : row.agents;
   const pasted = typeof row.metadata?.author_name === 'string' ? row.metadata.author_name : null;
   return {
     id: row.id,
     task_id: row.task_id,
     author_id: row.author_id ?? null,
+    // A registered agent names itself; a pasted update falls back to whatever
+    // the scrum master typed.
     author_name:
+      agent?.name ??
       pasted ??
       profile?.full_name ??
       profile?.email ??
@@ -45,7 +49,10 @@ export async function GET(request: Request) {
 
   const { data, error } = await ctx.supabase
     .from('comments')
-    .select('id, task_id, author_id, source, body, metadata, created_at, profiles(full_name, email)')
+    .select(
+      'id, task_id, author_id, agent_id, source, body, metadata, created_at, ' +
+        'profiles(full_name, email), agents(name)'
+    )
     .eq('task_id', taskId)
     .is('deleted_at', null)
     .order('created_at', { ascending: true });
@@ -84,7 +91,10 @@ export async function POST(request: Request) {
       body,
       metadata: source === 'ai_agent' && author_name ? { author_name } : {},
     })
-    .select('id, task_id, author_id, source, body, metadata, created_at, profiles(full_name, email)')
+    .select(
+      'id, task_id, author_id, agent_id, source, body, metadata, created_at, ' +
+        'profiles(full_name, email), agents(name)'
+    )
     .single();
 
   if (error) return jsonError(error.message, 400);

@@ -1,6 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/server';
+import { fetchOrgDirectory } from '@/lib/server/org-users';
+import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
 import { getActiveOrg } from '@/lib/server/feature-flag';
 import { EmptyOrgPrompt } from '@/components/setup/EmptyOrgPrompt';
 
@@ -15,17 +17,51 @@ export async function RealVelocity() {
     .from('sprints')
     .select('id, name, sprint_number, status, end_date, capacity_points, projects(key, color)')
     .eq('org_id', active.org_id)
-    .in('status', ['active', 'closed'])
+    // sprint_status is 'completed', not 'closed' — the old filter silently
+    // excluded every finished sprint, which is most of the data.
+    .in('status', ['active', 'completed'])
     .order('start_date', { ascending: false })
     .limit(20);
   const sprints = sprintsData ?? [];
 
   const { data: tasksData } = await supabase
     .from('tasks')
-    .select('sprint_id, status, story_points')
+    .select('sprint_id, status, story_points, assignee_id, agent_id')
     .eq('org_id', active.org_id)
     .is('deleted_at', null);
-  const tasks = tasksData ?? [];
+  const tasks = (tasksData ?? []) as {
+    sprint_id: string | null;
+    status: string;
+    story_points: number | null;
+    assignee_id: string | null;
+    agent_id: string | null;
+  }[];
+
+  // V-02: per-contributor throughput, humans and agents in one list.
+  const directory = await fetchOrgDirectory(supabase, active.org_id);
+  const contributors = directory
+    .map((person) => {
+      const mine = tasks.filter((t) => (t.assignee_id ?? t.agent_id) === person.id);
+      const done = mine.filter((t) => t.status === 'done');
+      return {
+        person,
+        tasks: mine.length,
+        done: done.length,
+        completedPts: done.reduce((s, t) => s + (t.story_points ?? 0), 0),
+        openPts: mine
+          .filter((t) => t.status !== 'done')
+          .reduce((s, t) => s + (t.story_points ?? 0), 0),
+      };
+    })
+    .filter((c) => c.tasks > 0)
+    .sort((a, b) => b.completedPts - a.completedPts);
+
+  const agentPts = contributors
+    .filter((c) => c.person.kind === 'ai_agent')
+    .reduce((s, c) => s + c.completedPts, 0);
+  const humanPts = contributors
+    .filter((c) => c.person.kind !== 'ai_agent')
+    .reduce((s, c) => s + c.completedPts, 0);
 
   const rollup: Record<string, { committed: number; completed: number; tasks: number }> = {};
   for (const t of tasks) {
@@ -58,6 +94,46 @@ export async function RealVelocity() {
         <KpiCard label="Best sprint" value={`${maxCompleted} pts`} />
         <KpiCard label="Total tasks" value={tasks.length.toString()} />
       </div>
+
+      {contributors.length > 0 && (
+        <Card>
+          <CardContent className="p-5 space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+                  V-02 · Contributors
+                </div>
+                <div className="text-base font-bold">Completed points per member</div>
+              </div>
+              {agentPts > 0 && (
+                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em]">
+                  <Badge variant="default">{humanPts} pts human</Badge>
+                  <Badge variant="purple">{agentPts} pts agent</Badge>
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {contributors.map((c) => (
+                <div
+                  key={c.person.id}
+                  className="rounded-xl border border-border bg-card p-4 flex items-center gap-3"
+                >
+                  <OwnerAvatar user={c.person} size={36} />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] font-semibold truncate">{c.person.name}</div>
+                    <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                      {c.done}/{c.tasks} done · {c.openPts} pts open
+                    </div>
+                  </div>
+                  <div className="font-mono text-[18px] font-extrabold text-primary">
+                    {c.completedPts}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardContent className="p-5 space-y-3">

@@ -10,7 +10,7 @@ import { getActiveOrg } from '@/lib/server/feature-flag';
 import { EmptyOrgPrompt } from '@/components/setup/EmptyOrgPrompt';
 import { LiveKanbanBoard } from '@/components/sprints/LiveKanbanBoard';
 import { CompleteSprintButton } from '@/components/sprints/CompleteSprintButton';
-import { fetchOrgUsers } from '@/lib/server/org-users';
+import { fetchOrgDirectory } from '@/lib/server/org-users';
 import type { BoardTask } from '@/lib/board';
 import { cn } from '@/lib/utils';
 
@@ -32,7 +32,7 @@ export async function RealSprintDetail({ sprintId }: { sprintId: string }) {
     .from('tasks')
     .select(
       'id, task_key, title, description, project_id, sprint_id, status, priority, type, ' +
-        'story_points, is_blocked, blocker_reason, assignee_id, reporter_id, due_date, ' +
+        'story_points, is_blocked, blocker_reason, assignee_id, agent_id, reporter_id, due_date, ' +
         'created_at, completed_at, comments(count)'
     )
     .eq('sprint_id', sprintId)
@@ -47,7 +47,8 @@ export async function RealSprintDetail({ sprintId }: { sprintId: string }) {
     comments: undefined,
   }));
 
-  const users = await fetchOrgUsers(supabase, active.org_id);
+  // Humans and agents in one directory: the board treats them identically.
+  const users = await fetchOrgDirectory(supabase, active.org_id);
 
   const totalPts = taskList.reduce((s, t) => s + (t.story_points ?? 0), 0);
   const donePts = taskList.filter((t) => t.status === 'done').reduce((s, t) => s + (t.story_points ?? 0), 0);
@@ -111,6 +112,8 @@ export async function RealSprintDetail({ sprintId }: { sprintId: string }) {
         <Mini icon={AlertOctagon} label="Blockers" value={blockerCount.toString()} tone={blockerCount ? 'red' : undefined} />
       </div>
 
+      <AgentSplit tasks={taskList} />
+
       <Card>
         <CardContent className="p-5 space-y-3">
           <div className="flex items-center justify-between">
@@ -140,6 +143,48 @@ export async function RealSprintDetail({ sprintId }: { sprintId: string }) {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+/**
+ * The number no other sprint tool reports: how much of the committed work is
+ * owned by AI agents rather than people. Hidden until a workspace has agents.
+ */
+function AgentSplit({ tasks }: { tasks: BoardTask[] }) {
+  const agentTasks = tasks.filter((t) => t.agent_id);
+  if (agentTasks.length === 0) return null;
+
+  const humanTasks = tasks.filter((t) => t.assignee_id);
+  const pts = (list: BoardTask[]) => list.reduce((s, t) => s + (t.story_points ?? 0), 0);
+  const agentPts = pts(agentTasks);
+  const humanPts = pts(humanTasks);
+  const total = Math.max(1, agentPts + humanPts);
+  const agentShare = Math.round((agentPts / total) * 100);
+
+  return (
+    <Card>
+      <CardContent className="p-5 space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+              Human · agent split
+            </div>
+            <div className="text-base font-bold">Who is carrying this sprint</div>
+          </div>
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em]">
+            <Badge variant="default">{humanTasks.length} human · {humanPts} pts</Badge>
+            <Badge variant="purple">{agentTasks.length} agent · {agentPts} pts</Badge>
+          </div>
+        </div>
+        <div className="h-2 w-full rounded-full bg-[#0A0A0A] overflow-hidden flex">
+          <div className="h-full bg-primary" style={{ width: `${100 - agentShare}%` }} />
+          <div className="h-full bg-[#7F77DD]" style={{ width: `${agentShare}%` }} />
+        </div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+          Agents hold {agentShare}% of committed points
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

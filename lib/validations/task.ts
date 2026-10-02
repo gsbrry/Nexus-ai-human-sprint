@@ -16,7 +16,10 @@ export const taskCreateSchema = z.object({
   priority: taskPriorityEnum.default('medium'),
   status: taskStatusEnum.default('todo'),
   story_points: z.number().int().min(0).max(100).nullable().optional(),
+  // A task has one owner: a person via assignee_id, or an AI agent via
+  // agent_id. The tasks_single_assignee check enforces the same rule in the DB.
   assignee_id: z.string().nullable().optional(),
+  agent_id: z.string().nullable().optional(),
   due_date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD')

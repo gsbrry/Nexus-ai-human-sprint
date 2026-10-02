@@ -6,6 +6,7 @@ import { OrgTab } from '@/components/settings/tabs/OrgTab';
 import { MembersTab } from '@/components/settings/tabs/MembersTab';
 import { ApiKeysTab } from '@/components/settings/tabs/ApiKeysTab';
 import { NotificationsTab } from '@/components/settings/tabs/NotificationsTab';
+import { AgentsTab } from '@/components/settings/tabs/AgentsTab';
 
 /** N-02 / N-03 against real Supabase data. */
 export function RealSettings() {
@@ -26,10 +27,11 @@ export function RealSettings() {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full md:w-auto">
+        <TabsList className="grid grid-cols-2 md:grid-cols-6 w-full md:w-auto">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="org">Organisation</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
+          <TabsTrigger value="agents">AI agents</TabsTrigger>
           <TabsTrigger value="keys">API keys</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
@@ -42,6 +44,9 @@ export function RealSettings() {
         </TabsContent>
         <TabsContent value="members" className="mt-6">
           <MembersTab />
+        </TabsContent>
+        <TabsContent value="agents" className="mt-6">
+          <AgentsTab />
         </TabsContent>
         <TabsContent value="keys" className="mt-6">
           <ApiKeysTab />

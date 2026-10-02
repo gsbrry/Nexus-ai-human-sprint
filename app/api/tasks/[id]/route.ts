@@ -56,9 +56,14 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
 
+  // Exclusive ownership, matching the tasks_single_assignee check.
+  const update: Record<string, unknown> = { ...parsed.data };
+  if (update.agent_id) update.assignee_id = null;
+  else if (update.assignee_id) update.agent_id = null;
+
   const { data, error } = await supabase
     .from('tasks')
-    .update(parsed.data)
+    .update(update)
     .eq('id', params.id)
     .select()
     .single();

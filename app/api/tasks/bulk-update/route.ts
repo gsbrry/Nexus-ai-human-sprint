@@ -12,6 +12,7 @@ const schema = z.object({
   priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   sprint_id: z.string().uuid().nullable().optional(),
   assignee_id: z.string().uuid().nullable().optional(),
+  agent_id: z.string().uuid().nullable().optional(),
 });
 
 /**
@@ -39,6 +40,11 @@ export async function PATCH(request: Request) {
     if (v !== undefined) update[k] = v;
   }
   if (Object.keys(update).length === 0) return jsonError('Nothing to update', 400);
+
+  // Ownership is exclusive, so setting one side clears the other rather than
+  // tripping the tasks_single_assignee check.
+  if (update.assignee_id) update.agent_id = null;
+  if (update.agent_id) update.assignee_id = null;
 
   if (update.status === 'blocked') {
     update.is_blocked = true;

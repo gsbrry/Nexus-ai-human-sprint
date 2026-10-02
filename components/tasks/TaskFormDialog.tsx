@@ -32,7 +32,7 @@ import {
   type MockTaskStatus,
   type MockTaskType,
 } from '@/lib/mock/gbm';
-import type { BoardColor } from '@/lib/board';
+import type { BoardColor, BoardUser } from '@/lib/board';
 import { cn } from '@/lib/utils';
 
 const POINT_OPTIONS = [1, 2, 3, 5, 8, 13];
@@ -61,6 +61,7 @@ export function TaskFormDialog({
   projects = mockProjects,
   sprints = mockSprints,
   members,
+  agents = [],
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -70,6 +71,8 @@ export function TaskFormDialog({
   onSave: (task: MockTask) => void;
   projects?: TaskFormProject[];
   sprints?: TaskFormSprint[];
+  /** AI agents assignable in this workspace. */
+  agents?: BoardUser[];
   /** When omitted, the mock project's own member list is used. */
   members?: TaskFormMember[];
 }) {
@@ -96,6 +99,7 @@ export function TaskFormDialog({
       status: initial?.status ?? 'todo',
       story_points: initial?.story_points ?? null,
       assignee_id: initial?.assignee_id ?? null,
+      agent_id: initial?.agent_id ?? null,
       due_date: initial?.due_date ?? null,
     },
   });
@@ -112,6 +116,7 @@ export function TaskFormDialog({
         status: initial?.status ?? 'todo',
         story_points: initial?.story_points ?? null,
         assignee_id: initial?.assignee_id ?? null,
+        agent_id: initial?.agent_id ?? null,
         due_date: initial?.due_date ?? null,
       });
       setError(null);
@@ -130,6 +135,7 @@ export function TaskFormDialog({
   const watchStatus = watch('status');
   const watchPoints = watch('story_points');
   const watchAssignee = watch('assignee_id');
+  const watchAgent = watch('agent_id');
   const watchSprint = watch('sprint_id');
 
   async function onSubmit(data: TaskCreateInput) {
@@ -212,12 +218,17 @@ export function TaskFormDialog({
             <div className="space-y-2">
               <Label>Project</Label>
               <PillPicker
-                items={mockProjects.map((p) => ({ value: p.id, label: p.key, color: p.color }))}
+                items={projects.map((p) => ({
+                  value: p.id,
+                  label: p.key,
+                  color: 'color' in p ? (p as { color?: string }).color : undefined,
+                }))}
                 value={projectId}
                 onChange={(v) => {
                   setValue('project_id', v);
                   setValue('sprint_id', null);
                   setValue('assignee_id', null);
+                  setValue('agent_id', null);
                 }}
               />
             </div>
@@ -284,10 +295,13 @@ export function TaskFormDialog({
             <div className="flex flex-wrap gap-1.5">
               <button
                 type="button"
-                onClick={() => setValue('assignee_id', null)}
+                onClick={() => {
+                  setValue('assignee_id', null);
+                  setValue('agent_id', null);
+                }}
                 className={cn(
                   'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 transition-colors',
-                  !watchAssignee
+                  !watchAssignee && !watchAgent
                     ? 'border-gold/50 bg-gold/10 text-foreground'
                     : 'border-border bg-[#0A0A0A] text-muted-foreground hover:text-foreground'
                 )}
@@ -298,7 +312,10 @@ export function TaskFormDialog({
                 <button
                   type="button"
                   key={u.id}
-                  onClick={() => setValue('assignee_id', u.id)}
+                  onClick={() => {
+                    setValue('assignee_id', u.id);
+                    setValue('agent_id', null);
+                  }}
                   className={cn(
                     'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 transition-colors',
                     watchAssignee === u.id
@@ -311,6 +328,43 @@ export function TaskFormDialog({
                 </button>
               ))}
             </div>
+
+            {/* Agents are assignable exactly like people — the point of the
+                product. Paused agents are listed but cannot take new work. */}
+            {agents.length > 0 && (
+              <div className="pt-2 space-y-1.5">
+                <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                  AI agents
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {agents.map((a) => {
+                    const paused = a.status === 'paused';
+                    return (
+                      <button
+                        type="button"
+                        key={a.id}
+                        disabled={paused}
+                        onClick={() => {
+                          setValue('agent_id', a.id);
+                          setValue('assignee_id', null);
+                        }}
+                        title={paused ? `${a.name} is paused` : a.name}
+                        className={cn(
+                          'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 transition-colors',
+                          watchAgent === a.id
+                            ? 'border-[#7F77DD]/60 bg-[#7F77DD]/10 text-foreground'
+                            : 'border-border bg-[#0A0A0A] text-muted-foreground hover:text-foreground',
+                          paused && 'opacity-40 cursor-not-allowed'
+                        )}
+                      >
+                        <OwnerAvatar user={a} size={16} />
+                        <span className="text-[12px]">{a.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           <DialogFooter className="gap-2 pt-2">

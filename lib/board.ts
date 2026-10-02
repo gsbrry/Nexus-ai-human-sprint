@@ -22,6 +22,16 @@ export type BoardUser = {
   role?: string;
   color: BoardColor;
   initials: string;
+  /**
+   * Agents sit in the same directory as people so one lookup serves both. Their
+   * ids come from the `agents` table, humans' from `profiles`, and uuids do not
+   * collide, so a single Map is safe.
+   */
+  kind?: 'human' | 'ai_agent';
+  /** Agents only: paused agents stay visible but cannot take new work. */
+  status?: 'active' | 'paused';
+  /** Agents only: free-text provider, e.g. 'Claude Code'. */
+  provider?: string | null;
 };
 
 export type BoardComment = {
@@ -45,6 +55,8 @@ export type BoardTask = {
   priority: BoardPriority;
   type: BoardTaskType;
   assignee_id: string | null;
+  /** Set instead of assignee_id when the owner is an AI agent. */
+  agent_id?: string | null;
   reporter_id?: string | null;
   story_points: number | null;
   is_blocked: boolean;
@@ -71,6 +83,14 @@ export function statusLabel(s: BoardStatus): string {
 }
 
 /** Number shown on a card's comment chip, whichever shape the task arrived in. */
+/**
+ * The task's owner, whichever kind it is. A task carries at most one of the two
+ * (enforced by the tasks_single_assignee check), so this is unambiguous.
+ */
+export function ownerId(task: BoardTask): string | null {
+  return task.assignee_id ?? task.agent_id ?? null;
+}
+
 export function commentCount(task: BoardTask): number {
   return task.comments?.length ?? task.comment_count ?? 0;
 }

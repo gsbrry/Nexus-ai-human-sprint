@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
 import { StatusBadge, PriorityDot } from '@/components/tasks/StatusBadge';
-import { userMap, type BoardComment, type BoardTask, type BoardUser } from '@/lib/board';
+import { ownerId, userMap, type BoardComment, type BoardTask, type BoardUser } from '@/lib/board';
 import { cn } from '@/lib/utils';
 
 export function TaskDetailSheet({
@@ -70,7 +70,7 @@ export function TaskDetailSheet({
               <div className="px-5 sm:px-6 py-5 space-y-6">
                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                   <Detail label="Assignee">
-                    <OwnerLine user={task.assignee_id ? directory.get(task.assignee_id) : undefined} />
+                    <OwnerLine user={directory.get(ownerId(task) ?? '')} />
                   </Detail>
                   <Detail label="Reporter">
                     <OwnerLine user={task.reporter_id ? directory.get(task.reporter_id) : undefined} />

@@ -19,6 +19,7 @@ import { OwnerAvatar } from '@/components/tasks/OwnerBadge';
 import { PriorityDot } from '@/components/tasks/StatusBadge';
 import {
   commentCount,
+  ownerId,
   statusLabel,
   userMap,
   type BoardStatus,
@@ -154,7 +155,7 @@ export function KanbanBoard({
 }
 
 function DragPreviewCard({ task, users }: { task: BoardTask; users: Map<string, BoardUser> }) {
-  const assignee = task.assignee_id ? users.get(task.assignee_id) : undefined;
+  const assignee = users.get(ownerId(task) ?? '');
   const comments = commentCount(task);
   return (
     <div className={cn(

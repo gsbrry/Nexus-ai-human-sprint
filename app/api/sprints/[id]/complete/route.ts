@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireOrg, isResponse, jsonError, hasRole } from '@/lib/server/api';
 import { emitNotification } from '@/lib/server/notify';
+import { createServiceClient } from '@/lib/supabase/server';
 import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
@@ -33,7 +34,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
 
   const { data: tasks, error: taskError } = await ctx.supabase
     .from('tasks')
-    .select('id, status, story_points, assignee_id')
+    .select('id, status, story_points, assignee_id, agent_id')
     .eq('sprint_id', sprint.id)
     .is('deleted_at', null);
 
@@ -43,6 +44,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
     status: string;
     story_points: number | null;
     assignee_id: string | null;
+    agent_id: string | null;
   }[];
 
   const snapshotDate = new Date().toISOString().slice(0, 10);
@@ -53,31 +55,60 @@ export async function POST(_request: Request, { params }: { params: { id: string
     snapshot_date: snapshotDate,
   };
 
-  // Sprint-level row, then one per contributor.
-  const perUser = new Map<string | null, typeof taskList>();
-  perUser.set(null, taskList);
-  for (const t of taskList) {
-    const key = t.assignee_id;
-    if (!key) continue;
-    perUser.set(key, [...(perUser.get(key) ?? []), t]);
-  }
-
-  const rows = Array.from(perUser.entries()).map(([userId, list]) => {
+  const totals = (list: typeof taskList) => {
     const done = list.filter((t) => t.status === 'done');
     return {
-      ...base,
-      user_id: userId,
       points_committed: list.reduce((s, t) => s + (t.story_points ?? 0), 0),
       points_completed: done.reduce((s, t) => s + (t.story_points ?? 0), 0),
       tasks_committed: list.length,
       tasks_completed: done.length,
     };
-  });
+  };
 
-  const { error: snapError } = await ctx.supabase
+  // Sprint-level row, then one per human contributor, then one per agent.
+  const byUser = new Map<string, typeof taskList>();
+  const byAgent = new Map<string, typeof taskList>();
+  for (const t of taskList) {
+    if (t.assignee_id) byUser.set(t.assignee_id, [...(byUser.get(t.assignee_id) ?? []), t]);
+    else if (t.agent_id) byAgent.set(t.agent_id, [...(byAgent.get(t.agent_id) ?? []), t]);
+  }
+
+  const userRows = [
+    { ...base, user_id: null as string | null, agent_id: null, ...totals(taskList) },
+    ...Array.from(byUser.entries()).map(([userId, list]) => ({
+      ...base,
+      user_id: userId,
+      agent_id: null,
+      ...totals(list),
+    })),
+  ];
+
+  const agentRows = Array.from(byAgent.entries()).map(([agentId, list]) => ({
+    ...base,
+    user_id: null,
+    agent_id: agentId,
+    ...totals(list),
+  }));
+
+  // velocity_snapshots denies INSERT and UPDATE to every client role
+  // (migration 009), so snapshots must be written with the service client.
+  const admin = createServiceClient();
+
+  const { error: snapError } = await admin
     .from('velocity_snapshots')
-    .upsert(rows, { onConflict: 'sprint_id,user_id,snapshot_date' });
+    .upsert(userRows, { onConflict: 'sprint_id,user_id,snapshot_date' });
   if (snapError) return jsonError(snapError.message, 400);
+
+  if (agentRows.length > 0) {
+    // Agent rows need their own conflict target: user_id is null on all of them,
+    // and NULLs compare distinct, so the user-based index would not dedupe them.
+    const { error } = await admin
+      .from('velocity_snapshots')
+      .upsert(agentRows, { onConflict: 'sprint_id,agent_id,snapshot_date' });
+    if (error) return jsonError(error.message, 400);
+  }
+
+  const rows = userRows;
 
   // Unfinished work goes back to the backlog.
   const unfinished = taskList.filter((t) => t.status !== 'done').map((t) => t.id);

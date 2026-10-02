@@ -54,7 +54,9 @@ export async function POST(request: Request) {
       priority: parsed.data.priority ?? 'medium',
       status: parsed.data.status ?? 'todo',
       story_points: parsed.data.story_points ?? null,
-      assignee_id: parsed.data.assignee_id ?? null,
+      // Exclusive ownership: an agent assignment clears the human one.
+      assignee_id: parsed.data.agent_id ? null : parsed.data.assignee_id ?? null,
+      agent_id: parsed.data.agent_id ?? null,
       reporter_id: user.id,
       due_date: parsed.data.due_date ?? null,
       task_key: '', // trigger fills

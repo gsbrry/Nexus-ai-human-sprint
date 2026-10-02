@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { isAuthConfigured } from '@/lib/auth-config';
 import { requireOrg, isResponse, jsonError, hasRole } from '@/lib/server/api';
 import { orgForAgentApiKey, rotateAgentApiKey, revokeAgentApiKey } from '@/lib/server/telegram';
+import { agentForApiKey } from '@/lib/server/agents';
 import { emitNotification } from '@/lib/server/notify';
 import { recordAudit } from '@/lib/server/audit';
 
@@ -33,8 +34,16 @@ export async function POST(request: Request) {
   }
 
   const key = request.headers.get('x-nexus-agent-key') ?? '';
-  const orgId = await orgForAgentApiKey(key);
+
+  // A per-agent key identifies WHICH agent posted, so the comment and any task
+  // move are attributed to it. The older workspace-level key still works and
+  // posts as a generic agent.
+  const agent = await agentForApiKey(key);
+  const orgId = agent?.orgId ?? (await orgForAgentApiKey(key));
   if (!orgId) return jsonError('Invalid or missing agent key', 401);
+  if (agent && agent.status === 'paused') {
+    return jsonError(`Agent ${agent.name} is paused`, 403);
+  }
 
   let raw: unknown;
   try {
@@ -63,15 +72,18 @@ export async function POST(request: Request) {
     return jsonError('Task not found in this workspace', 404);
   }
 
+  const displayName = agent?.name ?? agent_name ?? 'AI agent';
+
   const { data: comment, error: commentError } = await admin
     .from('comments')
     .insert({
       org_id: orgId,
       task_id,
       author_id: null,
+      agent_id: agent?.id ?? null,
       source: 'ai_agent',
       body: update_text,
-      metadata: { author_name: agent_name ?? 'AI agent', via: 'webhook' },
+      metadata: { author_name: displayName, via: 'webhook' },
     })
     .select('id, created_at')
     .single();
@@ -95,14 +107,14 @@ export async function POST(request: Request) {
     source: 'webhook',
     response_text: update_text.slice(0, 20_000),
     status: 'success',
-    metadata: { agent_name: agent_name ?? 'AI agent', new_status: new_status ?? null },
+    metadata: { agent_id: agent?.id ?? null, agent_name: displayName, new_status: new_status ?? null },
   });
 
   await emitNotification({
     orgId,
     userIds: [task.assignee_id, task.reporter_id].filter(Boolean) as string[],
     type: 'ai_agent_update',
-    title: `${agent_name ?? 'AI agent'} posted on ${task.task_key}`,
+    title: `${displayName} posted on ${task.task_key}`,
     body: update_text.length > 220 ? `${update_text.slice(0, 217)}…` : update_text,
     link: task.sprint_id ? `/sprints/${task.sprint_id}` : '/tasks',
     taskId: task.id,
@@ -118,7 +130,8 @@ export async function POST(request: Request) {
     metadata: {
       task_id,
       source: 'ai_agent',
-      agent_name: agent_name ?? 'AI agent',
+      agent_id: agent?.id ?? null,
+      agent_name: displayName,
       new_status: new_status ?? null,
     },
     request,

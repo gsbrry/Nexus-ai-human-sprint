@@ -64,6 +64,8 @@ export type MockTask = {
   priority: MockTaskPriority;
   type: MockTaskType;
   assignee_id: string | null;
+  /** Set instead of assignee_id when an AI agent owns the task. */
+  agent_id?: string | null;
   reporter_id: string;
   story_points: number | null;
   is_blocked: boolean;
