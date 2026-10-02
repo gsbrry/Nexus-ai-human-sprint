@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { formatDistanceStrict } from 'date-fns';
 import {
@@ -52,10 +52,37 @@ const KIND_META: Record<MockNotifKind, { icon: LucideIcon; color: string; label:
   sprint: { icon: Target, color: '#7AA7E0', label: 'sprint' },
 };
 
-export function NotificationBell() {
+/**
+ * N-01. In `live` mode the feed comes from /api/notifications and read-state
+ * writes back; otherwise it renders the GBM demo feed from mocks.
+ */
+export function NotificationBell({ live = false }: { live?: boolean }) {
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<MockNotification[]>(mockNotifications);
+  const [items, setItems] = useState<MockNotification[]>(live ? [] : mockNotifications);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['value']>('all');
+
+  const load = useCallback(async () => {
+    if (!live) return;
+    try {
+      const res = await fetch('/api/notifications', { cache: 'no-store' });
+      if (!res.ok) return;
+      const json = await res.json();
+      // The API already returns the bell's shape; actor fields are cosmetic and
+      // absent on real rows, so the renderer falls back to the kind icon.
+      setItems(json.notifications as MockNotification[]);
+    } catch {
+      // A failed poll leaves the last good feed on screen.
+    }
+  }, [live]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  // Refresh when the panel is opened, so the badge is never stale on read.
+  useEffect(() => {
+    if (open) void load();
+  }, [open, load]);
 
   const unread = items.filter((n) => !n.read).length;
 
@@ -65,14 +92,30 @@ export function NotificationBell() {
     return items.filter((n) => n.kind === filter);
   }, [items, filter]);
 
-  const { today, earlier } = groupNotifications(filtered);
+  // Real rows carry real timestamps; the mock feed is anchored to the demo date.
+  const now = live ? new Date() : DEMO_NOW;
+  const { today, earlier } = groupNotifications(filtered, now);
 
   function markAllRead() {
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    if (live) void patchRead({ all: true });
   }
 
   function markOne(id: string) {
     setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    if (live) void patchRead({ id });
+  }
+
+  async function patchRead(payload: { id?: string; all?: boolean }) {
+    try {
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // Read-state is cosmetic; the next load reconciles it.
+    }
   }
 
   return (
@@ -144,10 +187,10 @@ export function NotificationBell() {
           ) : (
             <div className="py-2">
               {today.length > 0 && (
-                <Section label="Today" items={today} onClick={(id) => markOne(id)} onClose={() => setOpen(false)} />
+                <Section label="Today" items={today} now={now} onClick={(id) => markOne(id)} onClose={() => setOpen(false)} />
               )}
               {earlier.length > 0 && (
-                <Section label="Earlier" items={earlier} onClick={(id) => markOne(id)} onClose={() => setOpen(false)} />
+                <Section label="Earlier" items={earlier} now={now} onClick={(id) => markOne(id)} onClose={() => setOpen(false)} />
               )}
             </div>
           )}
@@ -160,11 +203,13 @@ export function NotificationBell() {
 function Section({
   label,
   items,
+  now,
   onClick,
   onClose,
 }: {
   label: string;
   items: MockNotification[];
+  now: Date;
   onClick: (id: string) => void;
   onClose: () => void;
 }) {
@@ -175,7 +220,7 @@ function Section({
       </div>
       <ul>
         {items.map((n) => (
-          <NotificationRow key={n.id} n={n} onClick={onClick} onClose={onClose} />
+          <NotificationRow key={n.id} n={n} now={now} onClick={onClick} onClose={onClose} />
         ))}
       </ul>
     </div>
@@ -184,10 +229,12 @@ function Section({
 
 function NotificationRow({
   n,
+  now,
   onClick,
   onClose,
 }: {
   n: MockNotification;
+  now: Date;
   onClick: (id: string) => void;
   onClose: () => void;
 }) {
@@ -200,11 +247,15 @@ function NotificationRow({
         !n.read && 'bg-gold/[0.025]'
       )}
     >
+      {/* Real rows have no actor avatar, so fall back to the kind icon. */}
       <div
         className="shrink-0 mt-0.5 size-8 rounded-full flex items-center justify-center text-[11px] font-bold font-mono ring-1 ring-border"
-        style={{ background: (n.actor_color ?? '#222') + '24', color: n.actor_color ?? '#999' }}
+        style={{
+          background: (n.actor_color ?? meta.color) + '24',
+          color: n.actor_color ?? meta.color,
+        }}
       >
-        {n.actor_initials}
+        {n.actor_initials ?? <Icon className="size-3.5" aria-hidden />}
       </div>
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -224,7 +275,7 @@ function NotificationRow({
         <div className="text-[13px] font-medium text-foreground leading-snug">{n.title}</div>
         <div className="text-[12px] text-muted-foreground line-clamp-2">{n.body}</div>
         <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-          {formatDistanceStrict(new Date(n.created_at), DEMO_NOW, { addSuffix: true })}
+          {formatDistanceStrict(new Date(n.created_at), now, { addSuffix: true })}
         </div>
       </div>
     </div>

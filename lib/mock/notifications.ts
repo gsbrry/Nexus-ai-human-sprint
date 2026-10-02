@@ -9,8 +9,9 @@ export type MockNotification = {
   body: string;
   task_key?: string;
   href?: string;
-  actor_name: string;
-  actor_initials: string;
+  // Optional: real notification rows have no actor avatar, only a kind.
+  actor_name?: string;
+  actor_initials?: string;
   actor_color?: string;
   created_at: string; // ISO
   read: boolean;
@@ -159,10 +160,11 @@ export const mockNotifications: MockNotification[] = [
   },
 ];
 
-export function groupNotifications(items: MockNotification[]) {
+/** `now` defaults to the demo anchor; live feeds pass the real clock. */
+export function groupNotifications(items: MockNotification[], now: Date = NOW) {
   const today: MockNotification[] = [];
   const earlier: MockNotification[] = [];
-  const cutoff = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()).getTime();
+  const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   for (const n of items) {
     const t = new Date(n.created_at).getTime();
     if (t >= cutoff) today.push(n);

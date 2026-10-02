@@ -143,7 +143,7 @@ export function Topbar({
 
       <div className="flex items-center gap-3">
         {previewMode && <RoleSwitch />}
-        <NotificationBell />
+        <NotificationBell live={!previewMode} />
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none focus:ring-2 focus:ring-ring rounded-full">
             <Avatar className="size-9">

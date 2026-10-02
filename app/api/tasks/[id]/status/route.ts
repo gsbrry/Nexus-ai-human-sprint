@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
-import { isAuthConfigured } from '@/lib/auth-config';
+import { requireOrg, isResponse, jsonError } from '@/lib/server/api';
+import { emitNotification } from '@/lib/server/notify';
+
+export const dynamic = 'force-dynamic';
 
 const schema = z.object({
   status: z.enum(['todo', 'in_progress', 'in_review', 'blocked', 'done']),
@@ -9,33 +11,18 @@ const schema = z.object({
 });
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  if (!isAuthConfigured()) {
-    return NextResponse.json(
-      { error: 'Auth not configured. Add Supabase keys to .env.local then restart the server.' },
-      { status: 503 }
-    );
-  }
+  const ctx = await requireOrg();
+  if (isResponse(ctx)) return ctx;
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    return jsonError('Invalid JSON', 400);
   }
 
   const parsed = schema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 });
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase: any = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
-  }
+  if (!parsed.success) return jsonError(parsed.error.issues[0]?.message ?? 'Invalid input', 400);
 
   const { status, blocker_reason } = parsed.data;
 
@@ -48,15 +35,36 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     update.blocker_reason = null;
   }
 
-  const { data, error } = await supabase
+  // completed_at is set by the trg_tasks_before_iu trigger, not here.
+  const { data, error } = await ctx.supabase
     .from('tasks')
     .update(update)
     .eq('id', params.id)
-    .select()
-    .single();
+    .is('deleted_at', null)
+    .select('id, task_key, title, status, sprint_id, assignee_id, reporter_id, is_blocked, blocker_reason, completed_at')
+    .maybeSingle();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return jsonError(error.message, 400);
+  if (!data) return jsonError('Task not found, or you cannot edit it', 404);
+
+  try {
+    const recipients = [data.assignee_id, data.reporter_id].filter(Boolean) as string[];
+    await emitNotification({
+      orgId: ctx.orgId,
+      userIds: recipients,
+      actorId: ctx.userId,
+      type: status === 'blocked' ? 'task_blocked' : 'task_status_changed',
+      title:
+        status === 'blocked'
+          ? `${data.task_key} is blocked`
+          : `${data.task_key} moved to ${status.replace('_', ' ')}`,
+      body: data.title,
+      link: data.sprint_id ? `/sprints/${data.sprint_id}` : '/tasks',
+      taskId: data.id,
+      sprintId: data.sprint_id,
+    });
+  } catch (e) {
+    console.error('[tasks/status] notification fan-out failed', e instanceof Error ? e.message : e);
   }
 
   return NextResponse.json({ task: data });
