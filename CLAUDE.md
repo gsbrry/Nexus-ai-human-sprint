@@ -64,12 +64,26 @@ Font mono: DM Mono
 ## Current sprint
 
 ```
-Sprint:        Sprint 1 — Foundation
-Theme:         DB + Auth scaffold
-Days:          1–3
-Active task:   Sprint 1 scaffold (folders, migrations, env, CLAUDE.md)
-Last decision: Migration files written with full schema, RLS, triggers, indexes. Not yet executed against Supabase.
+Sprint:        Sprint 5 — Real-data migration + QA
+Theme:         Every screen off mocks; bring-your-own keys
+Days:          13–14
+Active task:   Run migrations 014–016, then @Nina's RLS and webhook gates
+Last decision: No Anthropic or Telegram credentials in the environment. Users add
+               their own in Settings; the app ships fully functional without either.
+Branch:        feature/S5-kanban-comments-real-data
 ```
+
+### What is done
+
+Kanban drag-drop, task detail comments, Settings (all 5 tabs), notifications
+across in-app/email/Telegram, the import wizard, super admin, and project
+create/edit all run on real Supabase data. Demo mode is untouched.
+
+### What is NOT yet verified
+
+Nothing in Sprint 5 has been run against a live Supabase instance. Type-check,
+production build and a mock-mode route smoke test pass. See PENDING.md for the
+gate checklist.
 
 ---
 
@@ -79,7 +93,12 @@ Last decision: Migration files written with full schema, RLS, triggers, indexes.
 - No client-side DB calls — all data through /app/api/ server actions
 - No client-side score or calculation logic — server only
 - All Anay PRs reviewed by Marcus before merge — no exceptions
-- anthropic_api_key never returned in any API response — ever
+- anthropic_api_key never returned in any API response — ever, and revoked at
+  column level from anon and authenticated (migration 014)
+- No AI or messaging credential in the environment — users bring their own key
+  in Settings, and every feature degrades gracefully when one is absent
+- Workspace secrets (Telegram bot token, AI agent key) live in org_integrations:
+  RLS on, zero policies, so only service_role can read them
 - audit_log: UPDATE and DELETE revoked from all roles — immutable
 - Soft deletes only — never hard delete users, projects, sprints, tasks, or certificates
 - org_id denormalised into tasks, sprints, and comments — never join up for RLS
@@ -586,8 +605,13 @@ Merge rules:
 | Soft deletes only · no hard deletes | David | Day 0 |
 | audit_log UPDATE/DELETE revoked · not restricted | David | Day 0 |
 | GBM AI Academy data as dev seed | Shreya | Day 0 |
+| Primary brand colour gold → tech blue `#1a73e8` | Raphy | Sprint 5 |
+| Bring-your-own keys in Settings · none in env | Raphy | Sprint 5 |
+| Telegram bot token is org-scoped · Anthropic key is per user | Viktor + David | Sprint 5 |
+| Shared board types in lib/board.ts · mock and real render the same components | Marcus | Sprint 5 |
+| Unfinished tasks return to the backlog on sprint completion | Shreya | Sprint 5 |
 
 ---
 
-*Last updated: Day 0 · War room session · Raphy Varghese*
+*Last updated: Sprint 5 · Real-data migration session · Raphy Varghese*
 *Update this file at the end of every working session.*

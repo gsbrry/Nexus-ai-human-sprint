@@ -1,125 +1,105 @@
 # NEXUS · Pending Items & Test Checklist
 
-> Read this when you're back at the PC. Updated end of Sprint 5 wrap-up session.
+> Updated after the real-data migration session. Everything below reflects the
+> code on `feature/S5-kanban-comments-real-data`, verified by `tsc --noEmit`,
+> `next build`, and a mock-mode route smoke test.
 
 ---
 
-## 🟢 What works RIGHT NOW
+## 🟢 Now working on real Supabase data
 
-| Path | Mode | Notes |
+| Area | State |
+|---|---|
+| Auth: login, register, reset, profile setup, Google SSO | ✅ |
+| `/setup` wizard + `/api/setup/seed` | ✅ |
+| Dashboard, Projects, Project detail, Sprints, Sprint detail, Backlog, My tasks, Velocity | ✅ |
+| **Kanban drag-drop** (`/sprints/[id]`) | ✅ optimistic, rolls back on failure |
+| **Task detail panel** with live comment thread + composer | ✅ human / AI agent source |
+| **Settings** — all 5 tabs | ✅ |
+| **Notification bell** + mark read | ✅ |
+| **Import wizard** targeting real projects and sprints | ✅ |
+| **Super admin** SA-01 / SA-02 | ✅ |
+| **Project create/edit** (P-03) | ✅ |
+| Per-project backlog `/projects/[id]/backlog` | ✅ |
+
+Demo mode is unchanged: the demo cookie still renders the GBM mocks everywhere.
+
+---
+
+## 🔑 Keys — users bring their own, nothing goes in the environment
+
+| Integration | Where it is set | Without it |
 |---|---|---|
-| `/login` (demo mode) | ✅ Mock | Pick any of 8 teammates, instant in |
-| `/dashboard` (demo) | ✅ Mock | Role-aware (Member/SM/Admin/SA) |
-| `/dashboard` (real Supabase auth) | ✅ Real | Detects missing migrations + empty workspace gracefully |
-| `/projects`, `/projects/[id]`, `/sprints`, `/sprints/[id]`, `/sprints/backlog`, `/tasks`, `/velocity` | ✅ Both | Auto-branches: demo cookie → mock, real session → Supabase |
-| `/setup` wizard | ✅ Live | Detects which step you're on (env / auth / migrations / seed) and shows only that |
-| `/api/setup/seed` | ✅ Live | Idempotent — creates org + 2 projects + 2 sprints + 14 tasks for current user |
-| `/admin`, `/settings`, project/sprint **detail views** | ⏳ Mock only | Migration to real data deferred to next session |
+| Anthropic | Settings → API keys, per user | Mode 1 manual JSON import works normally |
+| Telegram bot | Settings → API keys, per workspace, org admin | In-app and email notifications still fire |
+| AI agent webhook key | Settings → API keys, issued by the app, shown once | Scrum masters can still paste AI updates as comments |
+| Resend | `RESEND_API_KEY` env | In-app notifications still fire |
+
+None of the three is ever returned to the browser. The Anthropic column is
+revoked from every client role at database level (migration 014); the Telegram
+and agent keys live in `org_integrations`, which has RLS on and no policies, so
+only `service_role` reaches them (migration 015).
 
 ---
 
-## 🔑 External API keys still pending
-
-| # | Integration | What you need | Status |
-|---|---|---|---|
-| 1 | **Supabase** | Provided ✅ but **migrations not yet run** | Run `cat /app/supabase/_bundle_schema.sql` and paste into Supabase SQL editor |
-| 2 | **Google OAuth** | ✅ **LIVE** — provider enabled in Supabase, Client ID `950687110108-kq576s5g4...apps.googleusercontent.com` configured. Click "Continue with Google" on `/login` to verify. | DONE |
-| 3 | **Resend** | ✅ **LIVE** — `RESEND_API_KEY` set in `.env.local`, test send verified (msg id `4318830e-...`). Endpoints: `/api/integrations/resend/send`, `/api/integrations/resend/invite`. Currently using `onboarding@resend.dev` sender — verify your own domain later for production. | DONE |
-| 4 | **Anthropic Claude** | `ANTHROPIC_API_KEY` (or per-user) for AI agents + Sprint 3 prompt gen | Pending |
-| 5 | **Telegram Bot** | Bot token from @BotFather + chat_id capture flow | Pending |
-
----
-
-## 🎯 Your immediate next steps (when back at PC)
+## ⚠️ Before any of this runs: migrations must be executed
 
 ```bash
-# 1. Sign in to Supabase SQL editor for your project:
-#    https://supabase.com/dashboard/project/pvmtmpuilfhkunpzeffw/sql/new
-# 2. Run this in your container terminal to dump the schema bundle:
-cat /app/supabase/_bundle_schema.sql
-# 3. Paste into the SQL editor → Run. (~2 sec)
-# 4. Open /register, create a real Supabase account
-# 5. Visit /setup — the wizard auto-detects you're at the "seed" step
-# 6. Click "Seed demo data" — workspace is provisioned
-# 7. Dashboard / Projects / Sprints / Tasks / Velocity all flip to real data
+# 1. Open the Supabase SQL editor for your project
+# 2. Dump the full bundle:
+cat supabase/_bundle_schema.sql
+# 3. Paste into the SQL editor → Run
 ```
 
-If you ever want to go back to mock mode without losing your Supabase data:
-- Sign out → use Demo mode picker on /login → you're back on GBM mocks instantly
+The bundle now includes three new migrations beyond the original 13:
+
+- `014_profile_visibility.sql` — org members can read each other's profile
+  basics (without this, every assignee avatar is blank), and
+  `profiles.anthropic_api_key` is revoked at column level
+- `015_org_integrations.sql` — per-workspace Telegram bot token and AI agent key
+- `016_telegram_updates.sql` — webhook replay guard
 
 ---
 
-## ⚠️ Screens still on mocks even when authenticated
+## 🧪 Still to verify — nothing below has been run
 
-These will keep rendering mock data until I migrate them — deferred to the next session for scope reasons:
+Everything above is verified by type-check, production build and a mock-mode
+route smoke test only. **No code in this session has been exercised against a
+live Supabase instance**, because there is no `.env.local` in the working copy.
 
-- `/tasks/[id]` — task detail slide-in panel
-- `/settings` — all 5 tabs (Profile, Org, Members, API keys, Notifications)
-- `/admin` — SA-01/SA-02 (orgs list + platform metrics)
-- `/import` — CSV import wizard (writes to mocks, not real DB)
-- **Kanban drag-drop on real data** — `/sprints/[id]` Real view is read-only currently. Drag-drop status updates need a `/api/tasks/[id]/status` PATCH endpoint wired to Supabase.
-- `/api/auth/google` callback handling — works to redirect, but profile sync needs Supabase provider config first
+### Hard gates (@Nina)
+- [ ] RLS test 1 — User A cannot read User B's tasks
+- [ ] RLS test 2 — Org A member cannot see any Org B data
+- [ ] RLS test 3 — `audit_log` UPDATE returns a permission error
+- [ ] RLS test 4 — anonymous key returns 0 rows on all tables
+- [ ] RLS test 5 — `select anthropic_api_key from profiles` is denied as `authenticated`
+- [ ] CSV formula injection blocked at the API layer
+- [ ] Telegram webhook replay — same `update_id` twice returns `duplicate: true`
+- [ ] Telegram webhook with a wrong secret token returns 401
+- [ ] Password reset link expires in exactly 1 hour
 
-**The architecture is in place**: each of these can be migrated with the same `useRealData()` branching pattern used in Dashboard/Projects/Sprints/Tasks/Velocity. ~15 min per screen.
-
----
-
-## 🧪 Testing matrix
-
-### Backend (delegate to `deep_testing_backend_nextjs` once auth is fully live)
-- [ ] `/api/auth/*` end-to-end (register → confirm → login → logout)
-- [ ] `/api/setup/seed` idempotency + RLS scoping
-- [ ] `/api/projects`, `/api/sprints`, `/api/tasks` CRUD respect RLS
-- [ ] `/api/tasks/[id]/status` optimistic update
-- [ ] `/api/import/json` CSV pipeline + Claude prompt gen
-- [ ] `/api/integrations/resend/send` + `telegram/send` (Phase 4C)
-
-### Frontend (delegate to `deep_testing_frontend_nextjs` only with your explicit OK each time)
-- [ ] Demo login picker → all 8 users
-- [ ] Real Supabase signup → setup wizard → seed → dashboard
-- [ ] Each screen renders correctly in BOTH demo and real modes
-- [ ] Role switcher (Member/SM/Admin/SA) hides/shows correct nav items
-- [ ] Mobile responsiveness at 375px
-
-### Manual sanity
-- [ ] Primary brand color (`#1a73e8` blue) consistent everywhere
-- [ ] Plus Jakarta Sans + DM Mono fonts intact
-- [ ] No console errors on any page
-- [ ] Notification bell badge math correct
-- [ ] Demo cookie cleared on "Exit demo mode"
+### Functional
+- [ ] Drag a card between columns, confirm the DB row and the header totals move
+- [ ] Post a comment, confirm the assignee gets in-app + email
+- [ ] Save an Anthropic key, confirm the import wizard offers "Generate with Claude"
+- [ ] Connect a Telegram bot, `/start` the bot, confirm it replies with the chat ID
+- [ ] Issue an agent key, POST to `/api/ai/agent-update`, confirm the purple badge
+- [ ] Complete a sprint, confirm the velocity snapshot and the backlog return
+- [ ] Load test bulk-update with 50 concurrent requests
 
 ---
 
-## 🧹 Refactor / cleanup backlog (do AFTER finishing Supabase swap)
+## 🧹 Remaining backlog
 
-- [ ] Rename leftover `text-gold` / `bg-gold` / `border-gold` → `text-primary` / `bg-primary` / `border-primary` (50+ occurrences, all aliased so no visual change, just semantic cleanup)
-- [ ] Split 600-line `settings/page.tsx` into per-tab files under `/components/settings/tabs/`
-- [ ] Extract `Mini`, `Stat`, `SectionHeader`, `Kpi` repeated tiles into `/components/ui/stat-tile.tsx`
-- [ ] Audit unused `lib/validations/*` schemas after Supabase types regenerate
-- [ ] Move `lib/mock/*` files to `lib/mock/` subdir (already there) and tag them deprecated in JSDoc
-- [ ] Generate fresh `types/database.ts` from real schema with `npx supabase gen types typescript`
-
----
-
-## 📂 Important files for the next session
-
-| File | What it is |
-|---|---|
-| `/app/SETUP_SUPABASE.md` | Step-by-step setup guide (Supabase + Google OAuth) |
-| `/app/DESIGN_TOKENS.md` | Brand color spec — **always read before adding new screens** |
-| `/app/PENDING.md` | This file |
-| `/app/supabase/_bundle_schema.sql` | All 13 migrations in one file — paste into SQL editor |
-| `/app/CLAUDE.md` | Master prompt / persona instructions |
-| `/app/lib/server/feature-flag.ts` | `useRealData()` helper — the pattern for any new screen migration |
-| `/app/components/dashboard/RealDashboard.tsx` | Reference implementation of a real-Supabase server component |
-| `/app/components/projects/RealProjectsList.tsx` | Another reference |
-| `/app/components/sprints/RealSprintsList.tsx` | Another reference |
-| `/app/components/tasks/RealMyTasks.tsx` | Another reference |
-| `/app/components/velocity/RealVelocity.tsx` | Another reference |
-
----
-
-## 🔐 Security reminder
-
-You shared `sb_secret_*` in chat. Once everything works end-to-end:
-**Supabase → Settings → API → Rotate service_role** (30 seconds, zero downtime) and update `/app/.env.local` with the new value.
+- [ ] Rename leftover `text-gold` / `bg-gold` / `border-gold` → `primary`
+      (the mock components still carry them; all new code uses `primary`)
+- [ ] Generate `types/database.ts` from the real schema with
+      `npx supabase gen types typescript` and drop the `any` casts in
+      `lib/server/api.ts`
+- [ ] Encrypt the stored Anthropic key at rest (pgsodium or an app-side secret).
+      It is currently plaintext in a column no client role can read.
+- [ ] Prune `telegram_updates` rows older than Telegram's retry window
+- [ ] `@mention` autocomplete in the comment composer; matching is currently by
+      first name or email handle
+- [ ] Sprint create/edit UI — the API exists (`/api/sprints`), the screen does not
+- [ ] Velocity snapshots are written on sprint completion only; no daily job yet
