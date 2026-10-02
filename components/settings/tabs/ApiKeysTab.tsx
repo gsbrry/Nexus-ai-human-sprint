@@ -1,6 +1,6 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import { Bot, CheckCircle2, Key, Loader2, Save, Sparkles, Trash2 } from 'lucide-react';
+import { Bot, CheckCircle2, Copy, Key, Loader2, RefreshCw, Save, Sparkles, Trash2, Webhook } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ export function ApiKeysTab() {
     <div className="space-y-4">
       <AnthropicCard />
       <TelegramCard />
+      <AgentKeyCard />
     </div>
   );
 }
@@ -291,5 +292,136 @@ function ModeLine({ on, title, desc }: { on: boolean; title: string; desc: strin
         <div className="text-[11px] text-muted-foreground">{desc}</div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Mode 3, webhook variant. An external AI agent posts task updates to
+ * /api/ai/agent-update with this key. It is shown once at issue time and is not
+ * retrievable afterwards, so rotating is the recovery path for a lost key.
+ */
+function AgentKeyCard() {
+  const [hasKey, setHasKey] = useState<boolean | null>(null);
+  const [issued, setIssued] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [state, setState] = useState<SaveState>(null);
+
+  const load = useCallback(async () => {
+    const res = await fetch('/api/ai/agent-update', { cache: 'no-store' });
+    const json = await res.json();
+    setHasKey(res.ok ? Boolean(json.has_agent_api_key) : false);
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function issue() {
+    setBusy(true);
+    setState(null);
+    try {
+      const res = await fetch('/api/ai/agent-update', { method: 'PUT' });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Could not issue a key');
+      setIssued(json.agent_api_key as string);
+      setHasKey(true);
+      setState({ kind: 'ok', message: 'Key issued. Copy it now, it is not shown again.' });
+    } catch (e) {
+      setState({ kind: 'error', message: e instanceof Error ? e.message : 'Could not issue a key' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function revoke() {
+    setBusy(true);
+    setState(null);
+    try {
+      const res = await fetch('/api/ai/agent-update', { method: 'DELETE' });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Could not revoke');
+      setIssued(null);
+      setHasKey(false);
+      setState({ kind: 'ok', message: 'Agent key revoked.' });
+    } catch (e) {
+      setState({ kind: 'error', message: e instanceof Error ? e.message : 'Could not revoke' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copy() {
+    if (!issued) return;
+    await navigator.clipboard.writeText(issued);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <Card>
+      <CardContent className="p-6 space-y-5">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <SectionHeader
+            code="N-03.04"
+            title="AI agent webhook key"
+            desc="Optional. Lets an AI agent post progress straight onto a task. Without it, a scrum master can still paste agent updates into any comment box and tag them as AI."
+          />
+          {hasKey === null ? null : hasKey ? (
+            <Badge variant="teal" className="font-mono">
+              <CheckCircle2 className="size-2.5 mr-1" /> issued
+            </Badge>
+          ) : (
+            <Badge variant="default" className="font-mono">
+              not issued
+            </Badge>
+          )}
+        </div>
+
+        <div className="rounded-md border border-border bg-[#0A0A0A] px-4 py-3 space-y-1.5">
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+            <Webhook className="size-3 text-primary" />
+            Endpoint
+          </div>
+          <code className="block font-mono text-[11px] text-foreground/85 break-all">
+            POST /api/ai/agent-update
+          </code>
+          <code className="block font-mono text-[11px] text-muted-foreground break-all">
+            x-nexus-agent-key: &lt;your key&gt;
+          </code>
+          <code className="block font-mono text-[11px] text-muted-foreground break-all">
+            {'{ "task_id": "…", "update_text": "…", "new_status": "in_review" }'}
+          </code>
+        </div>
+
+        {issued && (
+          <div className="rounded-md border border-primary/40 bg-primary/10 px-4 py-3 space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
+              Copy this now — it is never shown again
+            </div>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 font-mono text-[11px] break-all">{issued}</code>
+              <Button variant="outline" size="sm" onClick={copy}>
+                {copied ? <CheckCircle2 className="size-3.5" /> : <Copy className="size-3.5" />}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button onClick={issue} disabled={busy}>
+            {busy ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+            {hasKey ? 'Rotate key' : 'Issue key'}
+          </Button>
+          {hasKey && (
+            <Button variant="outline" onClick={revoke} disabled={busy}>
+              <Trash2 className="size-4" />
+              Revoke
+            </Button>
+          )}
+          <StatusLine state={state} />
+        </div>
+      </CardContent>
+    </Card>
   );
 }

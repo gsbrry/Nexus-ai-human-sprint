@@ -82,3 +82,39 @@ export async function sendTelegramMessage(botToken: string, chatId: string, text
   }
   return true;
 }
+
+// ---------------------------------------------------------------------------
+// Agent webhook key — the credential an external AI agent presents when it posts
+// task updates. Lives alongside the other workspace secrets for the same reason:
+// only service_role can read it.
+// ---------------------------------------------------------------------------
+
+export async function rotateAgentApiKey(orgId: string, updatedBy: string): Promise<string> {
+  const admin = createServiceClient();
+  const key = `nxs_agent_${randomBytes(24).toString('hex')}`;
+  const { error } = await admin
+    .from('org_integrations')
+    .upsert({ org_id: orgId, agent_api_key: key, updated_by: updatedBy }, { onConflict: 'org_id' });
+  if (error) throw new Error(error.message);
+  return key;
+}
+
+export async function revokeAgentApiKey(orgId: string, updatedBy: string): Promise<void> {
+  const admin = createServiceClient();
+  const { error } = await admin
+    .from('org_integrations')
+    .upsert({ org_id: orgId, agent_api_key: null, updated_by: updatedBy }, { onConflict: 'org_id' });
+  if (error) throw new Error(error.message);
+}
+
+/** Resolves an agent key to its org, or null. Used to authenticate the webhook. */
+export async function orgForAgentApiKey(key: string): Promise<string | null> {
+  if (!key || !key.startsWith('nxs_agent_')) return null;
+  const admin = createServiceClient();
+  const { data } = await admin
+    .from('org_integrations')
+    .select('org_id')
+    .eq('agent_api_key', key)
+    .maybeSingle();
+  return (data as { org_id?: string } | null)?.org_id ?? null;
+}

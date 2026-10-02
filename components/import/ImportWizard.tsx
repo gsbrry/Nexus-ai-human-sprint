@@ -10,11 +10,28 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-import { mockProjects, mockSprints, mockUsers, projectById, type MockProject, type MockSprint } from '@/lib/mock/gbm';
+import { mockProjects, mockSprints, mockUsers, projectById } from '@/lib/mock/gbm';
 import { buildClaudePrompt } from '@/lib/import/prompt';
 import { importPayloadSchema, type ImportPayload } from '@/lib/import/schema';
 
 type Step = 'upload' | 'prompt' | 'json' | 'result';
+
+/**
+ * The wizard runs against either the GBM mock catalogue or the signed-in
+ * workspace, so target lists arrive as props rather than being imported.
+ */
+export type ImportProject = { id: string; key: string; name: string; color?: string | null };
+export type ImportSprint = {
+  id: string;
+  project_id: string;
+  name: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+  goal?: string | null;
+  sprint_number?: number;
+};
+export type ImportMember = { name: string; role?: string };
 
 type ParsedCsv = {
   file_name: string;
@@ -31,16 +48,32 @@ type ImportResult = {
   ids: string[];
 };
 
-export function ImportWizard() {
+export function ImportWizard({
+  projects = mockProjects,
+  sprints = mockSprints,
+  members = mockUsers.map((u) => ({ name: u.name, role: u.role })),
+  /** True when the target workspace is real Supabase data. */
+  live = false,
+  /** True when this user has an Anthropic key, which unlocks Mode 2. */
+  hasAnthropicKey = false,
+}: {
+  projects?: ImportProject[];
+  sprints?: ImportSprint[];
+  members?: ImportMember[];
+  live?: boolean;
+  hasAnthropicKey?: boolean;
+} = {}) {
   const [step, setStep] = useState<Step>('upload');
-  const [project, setProject] = useState<MockProject>(mockProjects[0]);
+  const [project, setProject] = useState<ImportProject | null>(projects[0] ?? null);
   const [sprintId, setSprintId] = useState<string | null>(
-    mockSprints.find((s) => s.project_id === mockProjects[0].id && s.status === 'active')?.id ?? null
+    sprints.find((s) => s.project_id === projects[0]?.id && s.status === 'active')?.id ?? null
   );
-  const sprint: MockSprint | null = useMemo(
-    () => mockSprints.find((s) => s.id === sprintId) ?? null,
-    [sprintId]
+  const sprint: ImportSprint | null = useMemo(
+    () => sprints.find((s) => s.id === sprintId) ?? null,
+    [sprintId, sprints]
   );
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
 
   const [csv, setCsv] = useState<ParsedCsv | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
@@ -94,14 +127,34 @@ export function ImportWizard() {
   }
 
   const prompt = useMemo(() => {
-    if (!csv) return '';
-    return buildClaudePrompt({
-      project,
-      sprint,
-      members: mockUsers,
-      csv: csv.raw,
-    });
-  }, [csv, project, sprint]);
+    if (!csv || !project) return '';
+    return buildClaudePrompt({ project, sprint, members, csv: csv.raw });
+  }, [csv, project, sprint, members]);
+
+  /**
+   * Mode 2. Calls Claude with the user's own key and drops the JSON straight
+   * into the editor, where it still goes through the same validator as a paste.
+   */
+  async function generateWithClaude() {
+    if (!csv || !project) return;
+    setGenerating(true);
+    setGenerateError(null);
+    try {
+      const res = await fetch('/api/ai/generate-tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project_id: project.id, sprint_id: sprint?.id ?? null, csv: csv.raw }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Claude could not generate the tasks');
+      setJsonText(JSON.stringify(json.payload, null, 2));
+      setStep('json');
+    } catch (e) {
+      setGenerateError(e instanceof Error ? e.message : 'Claude could not generate the tasks');
+    } finally {
+      setGenerating(false);
+    }
+  }
 
   function validateJson() {
     setValidationError(null);
@@ -130,7 +183,7 @@ export function ImportWizard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          project_id: project.id,
+          project_id: project?.id,
           sprint_id: sprint?.id ?? null,
           file_name: csv?.file_name ?? 'paste.json',
           payload: validated,
@@ -162,6 +215,8 @@ export function ImportWizard() {
         <StepUpload
           project={project}
           setProject={setProject}
+          projects={projects}
+          sprints={sprints}
           sprintId={sprintId}
           setSprintId={setSprintId}
           csv={csv}
@@ -176,6 +231,10 @@ export function ImportWizard() {
           prompt={prompt}
           rows={csv.rows}
           headers={csv.headers}
+          canGenerate={live && hasAnthropicKey}
+          generating={generating}
+          generateError={generateError}
+          onGenerate={generateWithClaude}
           onBack={() => setStep('upload')}
           onContinue={() => setStep('json')}
         />
@@ -195,7 +254,7 @@ export function ImportWizard() {
       )}
 
       {step === 'result' && result && (
-        <StepResult result={result} onReset={reset} project={project} />
+        <StepResult result={result} onReset={reset} project={project} live={live} />
       )}
     </div>
   );
@@ -257,6 +316,8 @@ function Stepper({ step }: { step: Step }) {
 function StepUpload({
   project,
   setProject,
+  projects,
+  sprints,
   sprintId,
   setSprintId,
   csv,
@@ -264,8 +325,10 @@ function StepUpload({
   onFile,
   onContinue,
 }: {
-  project: MockProject;
-  setProject: (p: MockProject) => void;
+  project: ImportProject | null;
+  setProject: (p: ImportProject) => void;
+  projects: ImportProject[];
+  sprints: ImportSprint[];
   sprintId: string | null;
   setSprintId: (id: string | null) => void;
   csv: ParsedCsv | null;
@@ -274,7 +337,7 @@ function StepUpload({
   onContinue: () => void;
 }) {
   const [drag, setDrag] = useState(false);
-  const sprintsForProject = mockSprints.filter((s) => s.project_id === project.id);
+  const sprintsForProject = sprints.filter((s) => s.project_id === project?.id);
 
   return (
     <div className="space-y-5">
@@ -289,22 +352,22 @@ function StepUpload({
                 Project
               </div>
               <div className="flex flex-wrap gap-2">
-                {mockProjects.map((p) => (
+                {projects.map((p) => (
                   <button
                     key={p.id}
                     onClick={() => {
                       setProject(p);
-                      const active = mockSprints.find((s) => s.project_id === p.id && s.status === 'active');
+                      const active = sprints.find((s) => s.project_id === p.id && s.status === 'active');
                       setSprintId(active?.id ?? null);
                     }}
                     className={cn(
                       'inline-flex items-center gap-2 rounded-md border px-2.5 py-1.5 transition-colors',
-                      project.id === p.id
+                      project?.id === p.id
                         ? 'border-gold/50 bg-gold/10 text-foreground'
                         : 'border-border bg-[#0A0A0A] text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    <span className="font-mono text-[10px] font-bold" style={{ color: p.color }}>
+                    <span className="font-mono text-[10px] font-bold" style={{ color: p.color ?? undefined }}>
                       {p.key}
                     </span>
                     <span className="text-[12px]">{p.name}</span>
@@ -339,7 +402,9 @@ function StepUpload({
                         : 'border-border bg-[#0A0A0A] text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    <Badge variant={s.status === 'active' ? 'gold' : 'default'}>#{s.sprint_number}</Badge>
+                    <Badge variant={s.status === 'active' ? 'gold' : 'default'}>
+                      {s.sprint_number ? `#${s.sprint_number}` : s.status}
+                    </Badge>
                     <span className="text-[12px]">{s.name.split('·')[1]?.trim() ?? s.name}</span>
                   </button>
                 ))}
@@ -466,12 +531,21 @@ function StepPrompt({
   prompt,
   rows,
   headers,
+  canGenerate,
+  generating,
+  generateError,
+  onGenerate,
   onBack,
   onContinue,
 }: {
   prompt: string;
   rows: Record<string, string>[];
   headers: string[];
+  /** Mode 2 is offered only on real data and only with a saved Anthropic key. */
+  canGenerate: boolean;
+  generating: boolean;
+  generateError: string | null;
+  onGenerate: () => void;
   onBack: () => void;
   onContinue: () => void;
 }) {
@@ -492,26 +566,51 @@ function StepPrompt({
             </div>
             <div className="min-w-0 flex-1">
               <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-gold">
-                Mode 1 · manual JSON (no API key needed)
+                {canGenerate ? 'Mode 2 · API connected' : 'Mode 1 · manual JSON (no API key needed)'}
               </div>
-              <h3 className="text-base font-semibold mt-1">Paste this prompt into Claude Chat.</h3>
+              <h3 className="text-base font-semibold mt-1">
+                {canGenerate
+                  ? 'Generate with your own key, or paste into Claude Chat.'
+                  : 'Paste this prompt into Claude Chat.'}
+              </h3>
               <p className="text-[12px] text-muted-foreground mt-1">
                 The prompt embeds your project context, team roster, story-point options, and the CSV.
                 Claude will return strict JSON. Paste that JSON into the next step.
+                {!canGenerate && ' Add an Anthropic key in Settings to skip the copy and paste.'}
               </p>
             </div>
-            <Button onClick={copy} variant="default" className="shrink-0">
-              {copied ? (
-                <>
-                  <Check className="size-4" /> Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="size-4" /> Copy prompt
-                </>
+            <div className="flex flex-col gap-2 shrink-0">
+              {canGenerate && (
+                <Button onClick={onGenerate} disabled={generating}>
+                  {generating ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" /> Generating
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="size-4" /> Generate with Claude
+                    </>
+                  )}
+                </Button>
               )}
-            </Button>
+              <Button onClick={copy} variant={canGenerate ? 'outline' : 'default'}>
+                {copied ? (
+                  <>
+                    <Check className="size-4" /> Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="size-4" /> Copy prompt
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
+          {generateError && (
+            <Alert className="mt-4 border-destructive/40 bg-destructive/10">
+              <AlertDescription className="text-[12px]">{generateError}</AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
@@ -673,10 +772,12 @@ function StepResult({
   result,
   onReset,
   project,
+  live,
 }: {
   result: ImportResult;
   onReset: () => void;
-  project: MockProject;
+  project: ImportProject | null;
+  live: boolean;
 }) {
   return (
     <div className="space-y-5">
@@ -704,7 +805,7 @@ function StepResult({
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
                 {result.ok
-                  ? `They're now in the ${project.name} backlog or current sprint.`
+                  ? `They're now in the ${project?.name ?? 'project'} backlog or current sprint.`
                   : 'No tasks were created. See errors below.'}
               </p>
             </div>
@@ -725,8 +826,9 @@ function StepResult({
         <Button variant="outline" onClick={onReset}>
           <RotateCcw className="size-4" /> Import another file
         </Button>
-        {result.ok && (
-          <Link href={`/projects/${project.key.toLowerCase()}`}>
+        {/* Mock project pages resolve by key, real ones by uuid. */}
+        {result.ok && project && (
+          <Link href={live ? `/projects/${project.id}` : `/projects/${project.key.toLowerCase()}`}>
             <Button>
               Open {project.key} <ArrowRight className="size-4" />
             </Button>

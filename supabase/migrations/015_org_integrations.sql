@@ -17,6 +17,9 @@ create table public.org_integrations (
   org_id                  uuid primary key references public.organisations(id) on delete cascade,
   telegram_bot_token      text,
   telegram_webhook_secret text,
+  -- Bearer key an external AI agent presents on /api/ai/agent-update. Generated
+  -- by the app, rotatable from Settings, and readable only by service_role.
+  agent_api_key           text unique,
   updated_by              uuid references public.profiles(id) on delete set null,
   created_at              timestamptz not null default now(),
   updated_at              timestamptz not null default now()
@@ -38,6 +41,7 @@ create or replace view public.org_integrations_status as
 select
   oi.org_id,
   (oi.telegram_bot_token is not null and oi.telegram_bot_token <> '') as has_telegram_bot_token,
+  (oi.agent_api_key is not null and oi.agent_api_key <> '') as has_agent_api_key,
   oi.updated_at
 from public.org_integrations oi
 where public.is_org_member(oi.org_id);

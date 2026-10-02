@@ -1,15 +1,31 @@
-import type { MockProject, MockSprint, MockUser } from '@/lib/mock/gbm';
+/**
+ * Claude prompt for the CSV import (Mode 1 and Mode 2 both use this text, so the
+ * manual paste flow and the API flow cannot drift apart).
+ *
+ * Takes plain shapes rather than mock types, so it works for the demo projects
+ * and for real Supabase rows.
+ */
+export type PromptProject = { key: string; name: string };
+export type PromptSprint = {
+  name: string;
+  start_date: string;
+  end_date: string;
+  goal?: string | null;
+};
+export type PromptMember = { name: string; role?: string };
 
 export function buildClaudePrompt(args: {
-  project: MockProject;
-  sprint: MockSprint | null;
-  members: MockUser[];
+  project: PromptProject;
+  sprint: PromptSprint | null;
+  members: PromptMember[];
   csv: string;
 }): string {
   const { project, sprint, members, csv } = args;
-  const memberLines = members.map((m) => `- ${m.name} (${m.role.replace('_', ' ')})`).join('\n');
+  const memberLines = members
+    .map((m) => `- ${m.name}${m.role ? ` (${m.role.replace('_', ' ')})` : ''}`)
+    .join('\n');
   const sprintLine = sprint
-    ? `${sprint.name} · ${sprint.start_date} → ${sprint.end_date} · Goal: ${sprint.goal}`
+    ? `${sprint.name} · ${sprint.start_date} → ${sprint.end_date}${sprint.goal ? ` · Goal: ${sprint.goal}` : ''}`
     : 'No active sprint — import into backlog.';
 
   return `You are NEXUS Import Assistant. Read the CSV below and produce STRICT JSON that
@@ -20,7 +36,7 @@ PROJECT: ${project.name} (key: ${project.key})
 SPRINT:  ${sprintLine}
 
 TEAM:
-${memberLines}
+${memberLines || '- (no members listed)'}
 
 STORY POINT OPTIONS: 1, 2, 3, 5, 8, 13, 21 (use 0 for unknown).
 

@@ -42,20 +42,6 @@ export async function POST(request: Request) {
 
   const { project_id, sprint_id, file_name, payload } = parsed.data;
 
-  // Resolve assignees by name within the org
-  const assigneeNames = Array.from(new Set(payload.tasks.map((t) => t.assignee).filter(Boolean) as string[]));
-  let nameToId: Record<string, string> = {};
-  if (assigneeNames.length > 0) {
-    const { data: profs } = await supabase
-      .from('profiles')
-      .select('id, full_name')
-      .in('full_name', assigneeNames);
-    nameToId = (profs ?? []).reduce(
-      (acc: Record<string, string>, p: { id: string; full_name: string }) => ({ ...acc, [p.full_name]: p.id }),
-      {}
-    );
-  }
-
   // Look up project org_id (denormalised into tasks)
   const { data: project, error: projErr } = await supabase
     .from('projects')
@@ -64,6 +50,23 @@ export async function POST(request: Request) {
     .single();
   if (projErr || !project) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+  }
+
+  // Resolve assignee names against THIS org's members only. A bare name match
+  // across profiles could land a task on a same-named user in another org.
+  const assigneeNames = Array.from(new Set(payload.tasks.map((t) => t.assignee).filter(Boolean) as string[]));
+  const nameToId: Record<string, string> = {};
+  if (assigneeNames.length > 0) {
+    const { data: memberRows } = await supabase
+      .from('org_members')
+      .select('user_id, profiles(id, full_name)')
+      .eq('org_id', project.org_id)
+      .is('deleted_at', null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const row of (memberRows ?? []) as any[]) {
+      const p = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+      if (p?.full_name) nameToId[p.full_name] = p.id ?? row.user_id;
+    }
   }
 
   const rows = payload.tasks.map((t) => ({
@@ -82,7 +85,7 @@ export async function POST(request: Request) {
   }));
 
   // Log the import attempt
-  await supabase
+  const { data: importRow } = await supabase
     .from('csv_imports')
     .insert({
       org_id: project.org_id,
@@ -93,11 +96,30 @@ export async function POST(request: Request) {
       row_count: rows.length,
       status: 'parsing',
       raw_json: payload,
-    });
+    })
+    .select('id')
+    .maybeSingle();
 
   const { data: inserted, error: insertErr } = await supabase.from('tasks').insert(rows).select('id');
   if (insertErr) {
+    if (importRow?.id) {
+      await supabase
+        .from('csv_imports')
+        .update({ status: 'failed', errors: [insertErr.message], completed_at: new Date().toISOString() })
+        .eq('id', importRow.id);
+    }
     return NextResponse.json({ error: insertErr.message, created: 0 }, { status: 400 });
+  }
+
+  if (importRow?.id) {
+    await supabase
+      .from('csv_imports')
+      .update({
+        status: 'imported',
+        rows_imported: inserted?.length ?? 0,
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', importRow.id);
   }
 
   return NextResponse.json({
