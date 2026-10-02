@@ -19,22 +19,33 @@ type Task = {
 
 type Project = { id: string; key: string; name: string; color: string | null };
 
-export async function RealBacklog() {
+/**
+ * T-05. With no `projectId` this is the whole-workspace backlog reached from
+ * /sprints/backlog; with one it is the single-project backlog reached from a
+ * project page.
+ */
+export async function RealBacklog({ projectId }: { projectId?: string } = {}) {
   const active = await getActiveOrg();
   if (!active?.org_id) return <EmptyOrgPrompt />;
 
   const supabase = createClient();
-  const { data: projects } = await supabase
+  let projectQuery = supabase
     .from('projects')
     .select('id, key, name, color')
     .eq('org_id', active.org_id)
     .is('deleted_at', null);
-  const { data: tasks } = await supabase
+  if (projectId) projectQuery = projectQuery.eq('id', projectId);
+  const { data: projects } = await projectQuery;
+
+  let taskQuery = supabase
     .from('tasks')
     .select('id, task_key, title, status, priority, story_points, is_blocked, project_id')
     .eq('org_id', active.org_id)
     .is('deleted_at', null)
     .is('sprint_id', null);
+  if (projectId) taskQuery = taskQuery.eq('project_id', projectId);
+  const { data: tasks } = await taskQuery;
+
   const taskList = (tasks ?? []) as Task[];
   const projectList = (projects ?? []) as Project[];
 
@@ -53,19 +64,23 @@ export async function RealBacklog() {
   return (
     <div className="max-w-[1320px] mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8 space-y-6">
       <Link
-        href="/sprints"
+        href={projectId ? `/projects/${projectId}` : '/sprints'}
         className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground hover:text-primary"
       >
         <ArrowLeft className="size-3.5" />
-        All sprints
+        {projectId ? projectList[0]?.name ?? 'Project' : 'All sprints'}
       </Link>
 
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div className="space-y-2">
           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">T-05 · Backlog</div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Backlog</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            {projectId ? `${projectList[0]?.name ?? 'Project'} backlog` : 'Backlog'}
+          </h1>
           <p className="text-muted-foreground text-sm sm:text-base max-w-[640px]">
-            Every task across every project that hasn&apos;t been pulled into a sprint yet.
+            {projectId
+              ? 'Tasks in this project that have not been pulled into a sprint yet.'
+              : "Every task across every project that hasn't been pulled into a sprint yet."}
           </p>
         </div>
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em]">
@@ -76,7 +91,7 @@ export async function RealBacklog() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className={projectId ? 'hidden' : 'grid grid-cols-2 md:grid-cols-4 gap-3'}>
         {projectList.map((p) => {
           const r = byProject[p.id] ?? { tasks: [], pts: 0 };
           return (
