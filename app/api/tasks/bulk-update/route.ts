@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireOrg, isResponse, jsonError } from '@/lib/server/api';
+import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +56,16 @@ export async function PATCH(request: Request) {
     .select('id');
 
   if (error) return jsonError(error.message, 400);
+
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: 'update',
+    table: 'tasks',
+    newData: update,
+    metadata: { task_ids, updated: data?.length ?? 0 },
+    request,
+  });
 
   return NextResponse.json({ updated: data?.length ?? 0, requested: task_ids.length });
 }

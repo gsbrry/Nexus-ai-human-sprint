@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireOrg, isResponse, jsonError, hasRole } from '@/lib/server/api';
 import { emitNotification } from '@/lib/server/notify';
+import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,6 +102,20 @@ export async function POST(_request: Request, { params }: { params: { id: string
     .is('deleted_at', null);
 
   const summary = rows.find((r) => r.user_id === null);
+
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: 'update',
+    table: 'sprints',
+    recordId: sprint.id,
+    newData: { status: 'completed' },
+    metadata: {
+      returned_to_backlog: unfinished.length,
+      points_completed: summary?.points_completed ?? 0,
+      points_committed: summary?.points_committed ?? 0,
+    },
+  });
   await emitNotification({
     orgId: ctx.orgId,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

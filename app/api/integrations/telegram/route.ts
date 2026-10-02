@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireOrg, isResponse, jsonError, hasRole } from '@/lib/server/api';
+import { recordAudit } from '@/lib/server/audit';
 import {
   clearTelegramBotToken,
   getBotIdentity,
@@ -71,6 +72,16 @@ export async function PUT(request: Request) {
   // Outbound alerts work regardless; the webhook only adds inbound /start.
   const webhook = await registerTelegramWebhook(parsed.data.bot_token, ctx.orgId, secret);
 
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: 'update',
+    table: 'org_integrations',
+    recordId: ctx.orgId,
+    metadata: { field: 'telegram_bot_token', operation: 'connected', bot: identity.username },
+    request,
+  });
+
   return NextResponse.json({
     ok: true,
     has_telegram_bot_token: true,
@@ -93,6 +104,15 @@ export async function DELETE() {
   } catch (e) {
     return jsonError(e instanceof Error ? e.message : 'Could not clear the bot token', 400);
   }
+
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: 'update',
+    table: 'org_integrations',
+    recordId: ctx.orgId,
+    metadata: { field: 'telegram_bot_token', operation: 'disconnected' },
+  });
 
   return NextResponse.json({ ok: true, has_telegram_bot_token: false });
 }

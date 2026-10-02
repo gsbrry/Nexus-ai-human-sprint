@@ -66,7 +66,7 @@ export async function RealAdmin() {
     supabase.from('ai_interactions').select('org_id, input_tokens, output_tokens, interaction_type'),
     supabase
       .from('audit_log')
-      .select('id, org_id, actor_id, action, table_name, created_at')
+      .select('id, org_id, actor_id, action, table_name, record_id, metadata, created_at, profiles(full_name, email)')
       .order('created_at', { ascending: false })
       .limit(50),
   ]);
@@ -91,7 +91,10 @@ export async function RealAdmin() {
     actor_id: string | null;
     action: string;
     table_name: string;
+    record_id: string | null;
+    metadata: Record<string, unknown> | null;
     created_at: string;
+    profiles: { full_name: string | null; email: string | null } | { full_name: string | null; email: string | null }[] | null;
   }[];
 
   const liveOrgs = orgs.filter((o) => !o.deleted_at);
@@ -209,29 +212,66 @@ export async function RealAdmin() {
             </div>
           ) : (
             <div className="rounded-md border border-border overflow-hidden">
-              {audit.map((e, i) => (
-                <div
-                  key={e.id}
-                  className={cn(
-                    'flex items-center gap-3 px-4 py-2.5',
-                    i < audit.length - 1 && 'border-b border-border'
-                  )}
-                >
-                  <Badge variant={e.action === 'soft_delete' ? 'red' : 'default'} className="font-mono">
-                    {e.action}
-                  </Badge>
-                  <span className="font-mono text-[11px] text-muted-foreground">{e.table_name}</span>
-                  <span className="ml-auto font-mono text-[10px] text-muted-foreground">
-                    {format(new Date(e.created_at), 'dd MMM HH:mm')}
-                  </span>
-                </div>
-              ))}
+              {audit.map((e, i) => {
+                const p = Array.isArray(e.profiles) ? e.profiles[0] : e.profiles;
+                const actor = p?.full_name || p?.email || (e.actor_id ? 'Unknown user' : 'System / agent');
+                return (
+                  <div
+                    key={e.id}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-2.5',
+                      i < audit.length - 1 && 'border-b border-border'
+                    )}
+                  >
+                    <Badge
+                      variant={
+                        e.action === 'soft_delete'
+                          ? 'red'
+                          : e.action === 'permission_change'
+                            ? 'amber'
+                            : e.action === 'login' || e.action === 'logout'
+                              ? 'blue'
+                              : 'default'
+                      }
+                      className="font-mono shrink-0"
+                    >
+                      {e.action}
+                    </Badge>
+                    <span className="font-mono text-[11px] text-muted-foreground shrink-0">
+                      {e.table_name}
+                    </span>
+                    <span className="text-[12px] truncate">{actor}</span>
+                    {auditNote(e.metadata) && (
+                      <span className="font-mono text-[10px] text-muted-foreground truncate hidden md:inline">
+                        {auditNote(e.metadata)}
+                      </span>
+                    )}
+                    <span className="ml-auto font-mono text-[10px] text-muted-foreground shrink-0">
+                      {format(new Date(e.created_at), 'dd MMM HH:mm')}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
       </Card>
     </div>
   );
+}
+
+/** One-line summary of the metadata blob, for the audit row. */
+function auditNote(metadata: Record<string, unknown> | null): string | null {
+  if (!metadata) return null;
+  const parts: string[] = [];
+  if (typeof metadata.field === 'string') {
+    parts.push(`${metadata.field}${metadata.operation ? ` ${metadata.operation}` : ''}`);
+  }
+  if (typeof metadata.task_key === 'string') parts.push(metadata.task_key);
+  if (typeof metadata.outcome === 'string') parts.push(metadata.outcome);
+  if (typeof metadata.via === 'string') parts.push(metadata.via);
+  if (typeof metadata.created === 'number') parts.push(`${metadata.created} created`);
+  return parts.length > 0 ? parts.join(' · ') : null;
 }
 
 function Kpi({

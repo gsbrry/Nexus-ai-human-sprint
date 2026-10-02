@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireOrg, isResponse, jsonError, hasRole } from '@/lib/server/api';
+import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,6 +65,16 @@ export async function POST(request: Request) {
     const message = error.code === '23505' ? `Project key ${parsed.data.key} is already in use` : error.message;
     return jsonError(message, 400);
   }
+
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: 'insert',
+    table: 'projects',
+    recordId: data.id,
+    newData: data,
+    request,
+  });
 
   return NextResponse.json({ project: data }, { status: 201 });
 }

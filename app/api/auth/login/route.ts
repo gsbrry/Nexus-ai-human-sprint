@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { recordAudit } from '@/lib/server/audit';
 import { loginSchema } from '@/lib/validations/auth';
 import { isAuthConfigured } from '@/lib/auth-config';
 
@@ -27,8 +28,24 @@ export async function POST(request: Request) {
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
+    // Failed attempts are recorded too: a run of them is the signal worth seeing.
+    await recordAudit({
+      action: 'login',
+      table: 'auth.users',
+      metadata: { outcome: 'failed', email: parsed.data.email },
+      request,
+    });
     return NextResponse.json({ error: error.message }, { status: 401 });
   }
+
+  await recordAudit({
+    actorId: data.user?.id ?? null,
+    action: 'login',
+    table: 'auth.users',
+    recordId: data.user?.id ?? null,
+    metadata: { outcome: 'success' },
+    request,
+  });
 
   return NextResponse.json({ user: data.user, session: !!data.session });
 }

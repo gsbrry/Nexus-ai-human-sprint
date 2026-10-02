@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireOrg, isResponse, jsonError } from '@/lib/server/api';
 import { emitNotification } from '@/lib/server/notify';
+import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,6 +47,17 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
   if (error) return jsonError(error.message, 400);
   if (!data) return jsonError('Task not found, or you cannot edit it', 404);
+
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: 'update',
+    table: 'tasks',
+    recordId: data.id,
+    newData: { status: data.status, is_blocked: data.is_blocked },
+    metadata: { task_key: data.task_key },
+    request,
+  });
 
   try {
     const recipients = [data.assignee_id, data.reporter_id].filter(Boolean) as string[];

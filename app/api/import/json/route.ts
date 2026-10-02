@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { isAuthConfigured } from '@/lib/auth-config';
 import { importPayloadSchema } from '@/lib/import/schema';
+import { recordAudit } from '@/lib/server/audit';
 
 const requestSchema = z.object({
   project_id: z.string().uuid().or(z.string().min(1)),
@@ -121,6 +122,21 @@ export async function POST(request: Request) {
       })
       .eq('id', importRow.id);
   }
+
+  await recordAudit({
+    orgId: project.org_id,
+    actorId: user.id,
+    action: 'insert',
+    table: 'tasks',
+    metadata: {
+      via: 'csv_import',
+      project_id: project.id,
+      sprint_id: sprint_id || null,
+      file_name: file_name ?? 'paste.json',
+      created: inserted?.length ?? 0,
+    },
+    request,
+  });
 
   return NextResponse.json({
     created: inserted?.length ?? 0,

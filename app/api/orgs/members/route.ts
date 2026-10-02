@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireOrg, isResponse, jsonError, hasRole } from '@/lib/server/api';
 import { colorForId, initialsFor } from '@/lib/board';
+import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,6 +85,16 @@ export async function PATCH(request: Request) {
 
   if (error) return jsonError(error.message, 400);
   if (!data) return jsonError('Member not found in this workspace', 404);
+
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: remove ? 'soft_delete' : 'permission_change',
+    table: 'org_members',
+    recordId: user_id,
+    newData: remove ? null : { role },
+    request,
+  });
 
   return NextResponse.json({ ok: true, member: data });
 }

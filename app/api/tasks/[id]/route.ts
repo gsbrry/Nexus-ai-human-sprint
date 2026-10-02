@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { isAuthConfigured } from '@/lib/auth-config';
 import { taskUpdateSchema } from '@/lib/validations/task';
 import { requireOrg, isResponse, jsonError } from '@/lib/server/api';
+import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,5 +82,14 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
 
   if (error) return jsonError(error.message, 400);
   if (!data) return jsonError('Task not found', 404);
+
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: 'soft_delete',
+    table: 'tasks',
+    recordId: data.id,
+  });
+
   return NextResponse.json({ ok: true, id: data.id });
 }

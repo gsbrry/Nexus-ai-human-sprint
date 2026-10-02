@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireOrg, isResponse, jsonError, hasRole } from '@/lib/server/api';
+import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +61,17 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
   if (error) return jsonError(error.message, 400);
   if (!data) return jsonError('Project not found', 404);
+
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: 'update',
+    table: 'projects',
+    recordId: data.id,
+    newData: parsed.data,
+    request,
+  });
+
   return NextResponse.json({ project: data });
 }
 
@@ -82,5 +94,14 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
 
   if (error) return jsonError(error.message, 400);
   if (!data) return jsonError('Project not found', 404);
+
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: 'soft_delete',
+    table: 'projects',
+    recordId: data.id,
+  });
+
   return NextResponse.json({ ok: true, id: data.id });
 }

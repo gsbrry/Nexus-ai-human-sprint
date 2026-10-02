@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireOrg, isResponse, jsonError, hasRole } from '@/lib/server/api';
+import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,6 +87,16 @@ export async function POST(request: Request) {
         : error.message;
     return jsonError(message, 400);
   }
+
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: 'insert',
+    table: 'sprints',
+    recordId: data.id,
+    newData: data,
+    request,
+  });
 
   return NextResponse.json({ sprint: data }, { status: 201 });
 }

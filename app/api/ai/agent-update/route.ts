@@ -5,6 +5,7 @@ import { isAuthConfigured } from '@/lib/auth-config';
 import { requireOrg, isResponse, jsonError, hasRole } from '@/lib/server/api';
 import { orgForAgentApiKey, rotateAgentApiKey, revokeAgentApiKey } from '@/lib/server/telegram';
 import { emitNotification } from '@/lib/server/notify';
+import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,6 +109,21 @@ export async function POST(request: Request) {
     sprintId: task.sprint_id,
   });
 
+  // actor_id stays null: the actor is a machine, not a profile.
+  await recordAudit({
+    orgId,
+    action: 'insert',
+    table: 'comments',
+    recordId: comment.id,
+    metadata: {
+      task_id,
+      source: 'ai_agent',
+      agent_name: agent_name ?? 'AI agent',
+      new_status: new_status ?? null,
+    },
+    request,
+  });
+
   return NextResponse.json(
     { ok: true, comment_id: comment.id, status_changed: statusChanged },
     { status: 201 }
@@ -141,6 +157,14 @@ export async function PUT() {
 
   try {
     const key = await rotateAgentApiKey(ctx.orgId, ctx.userId);
+    await recordAudit({
+      orgId: ctx.orgId,
+      actorId: ctx.userId,
+      action: 'update',
+      table: 'org_integrations',
+      recordId: ctx.orgId,
+      metadata: { field: 'agent_api_key', operation: 'issued' },
+    });
     return NextResponse.json({ ok: true, agent_api_key: key, shown_once: true });
   } catch (e) {
     return jsonError(e instanceof Error ? e.message : 'Could not issue a key', 400);
@@ -157,6 +181,14 @@ export async function DELETE() {
 
   try {
     await revokeAgentApiKey(ctx.orgId, ctx.userId);
+    await recordAudit({
+      orgId: ctx.orgId,
+      actorId: ctx.userId,
+      action: 'update',
+      table: 'org_integrations',
+      recordId: ctx.orgId,
+      metadata: { field: 'agent_api_key', operation: 'revoked' },
+    });
     return NextResponse.json({ ok: true, has_agent_api_key: false });
   } catch (e) {
     return jsonError(e instanceof Error ? e.message : 'Could not revoke the key', 400);

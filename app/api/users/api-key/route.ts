@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireUser, isResponse, jsonError } from '@/lib/server/api';
+import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +53,16 @@ export async function PUT(request: Request) {
 
   if (error) return jsonError(error.message, 400);
 
+  await recordAudit({
+    actorId: ctx.userId,
+    action: 'update',
+    table: 'profiles',
+    recordId: ctx.userId,
+    newData: { anthropic_api_key: parsed.data.anthropic_api_key },
+    metadata: { field: 'anthropic_api_key', operation: 'set' },
+    request,
+  });
+
   // No echo of the key, not even masked.
   return NextResponse.json({ ok: true, has_anthropic_key: true });
 }
@@ -66,6 +77,14 @@ export async function DELETE() {
     .eq('id', ctx.userId);
 
   if (error) return jsonError(error.message, 400);
+
+  await recordAudit({
+    actorId: ctx.userId,
+    action: 'update',
+    table: 'profiles',
+    recordId: ctx.userId,
+    metadata: { field: 'anthropic_api_key', operation: 'cleared' },
+  });
 
   return NextResponse.json({ ok: true, has_anthropic_key: false });
 }

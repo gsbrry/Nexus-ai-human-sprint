@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireOrg, isResponse, jsonError } from '@/lib/server/api';
 import type { BoardComment } from '@/lib/board';
 import { emitNotification } from '@/lib/server/notify';
+import { recordAudit } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,6 +88,16 @@ export async function POST(request: Request) {
     .single();
 
   if (error) return jsonError(error.message, 400);
+
+  await recordAudit({
+    orgId: ctx.orgId,
+    actorId: ctx.userId,
+    action: 'insert',
+    table: 'comments',
+    recordId: data.id,
+    metadata: { task_id, source },
+    request,
+  });
 
   await notifyOnComment(ctx, task_id, body, source);
 
