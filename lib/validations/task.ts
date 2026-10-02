@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { neutraliseFormula } from '@/lib/import/schema';
 
 export const taskStatusEnum = z.enum(['todo', 'in_progress', 'in_review', 'blocked', 'done']);
 export const taskPriorityEnum = z.enum(['low', 'medium', 'high', 'critical']);
@@ -7,8 +8,10 @@ export const taskTypeEnum = z.enum(['feature', 'bug', 'chore', 'spike', 'epic'])
 export const taskCreateSchema = z.object({
   project_id: z.string().min(1, 'Project required'),
   sprint_id: z.string().nullable().optional(),
-  title: z.string().min(2, 'Title required').max(200),
-  description: z.string().max(2000).default(''),
+  // Neutralised here too, not only on import: a task typed by hand is exported
+  // to CSV by the same code path as an imported one.
+  title: z.string().min(2, 'Title required').max(200).transform(neutraliseFormula),
+  description: z.string().max(2000).default('').transform(neutraliseFormula),
   type: taskTypeEnum.default('feature'),
   priority: taskPriorityEnum.default('medium'),
   status: taskStatusEnum.default('todo'),

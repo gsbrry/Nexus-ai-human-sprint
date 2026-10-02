@@ -1,13 +1,29 @@
 import { z } from 'zod';
 
+/**
+ * CSV formula injection guard (@Nina, Sprint 3 security test 5).
+ *
+ * A cell beginning =, +, -, @, tab or CR is executed as a formula when the data
+ * is later opened in Excel or Sheets. Imported task titles and descriptions are
+ * exported again, so the neutralising prefix is applied at the API boundary,
+ * before anything reaches the database — not at render time, where one missed
+ * code path reopens it.
+ */
+const FORMULA_LEAD = /^[=+\-@\t\r]/;
+
+export function neutraliseFormula(value: string): string {
+  const trimmed = value.trim();
+  return FORMULA_LEAD.test(trimmed) ? `'${trimmed}` : trimmed;
+}
+
 export const taskTypeEnum = z.enum(['feature', 'bug', 'chore', 'spike', 'epic']);
 export const taskPriorityEnum = z.enum(['low', 'medium', 'high', 'critical']);
 
 // The schema the Claude prompt instructs the model to produce.
 // Matches Mock/Supabase task shape for the writable fields a CSV import sets.
 export const importTaskSchema = z.object({
-  title: z.string().min(2, 'Title required').max(200),
-  description: z.string().max(2000).default(''),
+  title: z.string().min(2, 'Title required').max(200).transform(neutraliseFormula),
+  description: z.string().max(2000).default('').transform(neutraliseFormula),
   type: taskTypeEnum.default('feature'),
   priority: taskPriorityEnum.default('medium'),
   story_points: z
@@ -15,7 +31,11 @@ export const importTaskSchema = z.object({
     .transform((v) => (typeof v === 'string' ? Number(v) : v))
     .refine((v) => Number.isFinite(v) && [0, 1, 2, 3, 5, 8, 13, 21].includes(v), 'Must be 1/2/3/5/8/13/21')
     .optional(),
-  assignee: z.string().nullable().optional(),
+  assignee: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => (typeof v === 'string' ? neutraliseFormula(v) : v)),
   due_date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD')

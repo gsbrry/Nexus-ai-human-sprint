@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveOrg } from '@/lib/server/feature-flag';
 import { EmptyOrgPrompt } from '@/components/setup/EmptyOrgPrompt';
 import { LiveKanbanBoard } from '@/components/sprints/LiveKanbanBoard';
+import { CompleteSprintButton } from '@/components/sprints/CompleteSprintButton';
 import { fetchOrgUsers } from '@/lib/server/org-users';
 import type { BoardTask } from '@/lib/board';
 import { cn } from '@/lib/utils';
@@ -95,6 +96,12 @@ export async function RealSprintDetail({ sprintId }: { sprintId: string }) {
             {format(new Date(sprint.start_date), 'dd MMM')} → {format(new Date(sprint.end_date), 'dd MMM yyyy')}
           </div>
         </div>
+        {sprint.status === 'active' && (
+          <CompleteSprintButton
+            sprintId={sprint.id}
+            openTaskCount={taskList.filter((t) => t.status !== 'done').length}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

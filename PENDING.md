@@ -20,6 +20,7 @@
 | **Import wizard** targeting real projects and sprints | ✅ |
 | **Super admin** SA-01 / SA-02 | ✅ |
 | **Project create/edit** (P-03) | ✅ |
+| **Sprint create/edit + complete** | ✅ writes the velocity snapshot |
 | Per-project backlog `/projects/[id]/backlog` | ✅ |
 
 Demo mode is unchanged: the demo cookie still renders the GBM mocks everywhere.
@@ -73,7 +74,9 @@ live Supabase instance**, because there is no `.env.local` in the working copy.
 - [ ] RLS test 3 — `audit_log` UPDATE returns a permission error
 - [ ] RLS test 4 — anonymous key returns 0 rows on all tables
 - [ ] RLS test 5 — `select anthropic_api_key from profiles` is denied as `authenticated`
-- [ ] CSV formula injection blocked at the API layer
+- [x] CSV formula injection neutralised at the API layer (`neutraliseFormula`
+      in `lib/import/schema.ts`, applied to import and to hand-typed tasks).
+      Still needs @Nina's confirming test against a live import.
 - [ ] Telegram webhook replay — same `update_id` twice returns `duplicate: true`
 - [ ] Telegram webhook with a wrong secret token returns 401
 - [ ] Password reset link expires in exactly 1 hour
@@ -101,5 +104,4 @@ live Supabase instance**, because there is no `.env.local` in the working copy.
 - [ ] Prune `telegram_updates` rows older than Telegram's retry window
 - [ ] `@mention` autocomplete in the comment composer; matching is currently by
       first name or email handle
-- [ ] Sprint create/edit UI — the API exists (`/api/sprints`), the screen does not
 - [ ] Velocity snapshots are written on sprint completion only; no daily job yet

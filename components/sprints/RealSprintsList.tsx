@@ -6,12 +6,21 @@ import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveOrg } from '@/lib/server/feature-flag';
 import { EmptyOrgPrompt } from '@/components/setup/EmptyOrgPrompt';
+import { NewSprintButton, type SprintFormProject } from '@/components/sprints/SprintFormDialog';
 
 export async function RealSprintsList() {
   const active = await getActiveOrg();
   if (!active?.org_id) return <EmptyOrgPrompt />;
 
   const supabase = createClient();
+
+  const { data: projectRows } = await supabase
+    .from('projects')
+    .select('id, key, name')
+    .eq('org_id', active.org_id)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true });
+  const projectOptions = (projectRows ?? []) as SprintFormProject[];
 
   const { data: sprints } = await supabase
     .from('sprints')
@@ -58,6 +67,7 @@ export async function RealSprintsList() {
             <ArrowUpRight className="size-3.5" />
             T-05 · Global backlog
           </Link>
+          <NewSprintButton projects={projectOptions} />
         </div>
       </div>
 
