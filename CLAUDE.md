@@ -67,7 +67,7 @@ Font mono: DM Mono
 Sprint:        Sprint 5 — Real-data migration + QA
 Theme:         Every screen off mocks; bring-your-own keys
 Days:          13–14
-Active task:   Run migrations 014–016, then @Nina's RLS and webhook gates
+Active task:   Run migrations 014–017, then @Nina's RLS and webhook gates
 Last decision: No Anthropic or Telegram credentials in the environment. Users add
                their own in Settings; the app ships fully functional without either.
 Branch:        feature/S5-kanban-comments-real-data
@@ -75,9 +75,12 @@ Branch:        feature/S5-kanban-comments-real-data
 
 ### What is done
 
-Kanban drag-drop, task detail comments, Settings (all 5 tabs), notifications
-across in-app/email/Telegram, the import wizard, super admin, and project
-create/edit all run on real Supabase data. Demo mode is untouched.
+Kanban drag-drop, task detail comments, Settings (all 6 tabs), notifications
+across in-app/email/Telegram, the import wizard, super admin, project and sprint
+create/edit, and the audit trail all run on real Supabase data. AI agents are
+assignable team members: they own tasks, appear on the board with a bot avatar,
+earn velocity, and post their own updates through a per-agent webhook key.
+Demo mode is untouched.
 
 ### What is NOT yet verified
 
@@ -610,6 +613,9 @@ Merge rules:
 | Telegram bot token is org-scoped · Anthropic key is per user | Viktor + David | Sprint 5 |
 | Shared board types in lib/board.ts · mock and real render the same components | Marcus | Sprint 5 |
 | Unfinished tasks return to the backlog on sprint completion | Shreya | Sprint 5 |
+| AI agents are their own table · never synthetic auth users | David + Viktor | Sprint 5 |
+| A task has exactly one owner · human or agent, never both | Marcus | Sprint 5 |
+| Per-agent webhook keys · updates attributed to the named agent | Aria | Sprint 5 |
 
 ---
 

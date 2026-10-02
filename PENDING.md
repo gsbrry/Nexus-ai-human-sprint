@@ -21,6 +21,8 @@
 | **Super admin** SA-01 / SA-02 | ✅ |
 | **Project create/edit** (P-03) | ✅ |
 | **Sprint create/edit + complete** | ✅ writes the velocity snapshot |
+| **AI agents as assignable members** | ✅ board, velocity, per-agent webhook keys |
+| **Audit trail** | ✅ every mutating route now appends |
 | Per-project backlog `/projects/[id]/backlog` | ✅ |
 
 Demo mode is unchanged: the demo cookie still renders the GBM mocks everywhere.
@@ -59,6 +61,7 @@ The bundle now includes three new migrations beyond the original 13:
   `profiles.anthropic_api_key` is revoked at column level
 - `015_org_integrations.sql` — per-workspace Telegram bot token and AI agent key
 - `016_telegram_updates.sql` — webhook replay guard
+- `017_agents.sql` — AI agents, agent assignment on tasks, agent velocity
 
 ---
 
@@ -81,14 +84,31 @@ live Supabase instance**, because there is no `.env.local` in the working copy.
 - [ ] Telegram webhook with a wrong secret token returns 401
 - [ ] Password reset link expires in exactly 1 hour
 
+### Agents
+- [ ] Add an agent in Settings, assign it a task, confirm the bot avatar on the board
+- [ ] Issue an agent key, POST `/api/ai/agent-update`, confirm the comment is
+      attributed to that agent by name
+- [ ] Pause an agent, confirm it cannot be assigned and its webhook returns 403
+- [ ] Complete a sprint with agent-owned tasks, confirm the agent velocity row
+
 ### Functional
 - [ ] Drag a card between columns, confirm the DB row and the header totals move
 - [ ] Post a comment, confirm the assignee gets in-app + email
 - [ ] Save an Anthropic key, confirm the import wizard offers "Generate with Claude"
 - [ ] Connect a Telegram bot, `/start` the bot, confirm it replies with the chat ID
-- [ ] Issue an agent key, POST to `/api/ai/agent-update`, confirm the purple badge
 - [ ] Complete a sprint, confirm the velocity snapshot and the backlog return
 - [ ] Load test bulk-update with 50 concurrent requests
+
+---
+
+## 🐛 Fixed in this session
+
+- Sprint completion wrote `velocity_snapshots` through the user's client, which
+  policy 009 denies. It now uses the service client. This would have failed
+  silently on the first real sprint close.
+- Velocity filtered sprints on `status = 'closed'`, which is not a value in the
+  `sprint_status` enum, so every completed sprint was excluded from the chart.
+- `audit_log` had no writer at all.
 
 ---
 
@@ -105,3 +125,5 @@ live Supabase instance**, because there is no `.env.local` in the working copy.
 - [ ] `@mention` autocomplete in the comment composer; matching is currently by
       first name or email handle
 - [ ] Velocity snapshots are written on sprint completion only; no daily job yet
+- [ ] Auto standup digest, global search, task dependencies and the retro screen
+      are all still unbuilt (discussed, not started)
