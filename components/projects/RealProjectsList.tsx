@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { ArrowUpRight, Plus } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { NewProjectButton } from '@/components/projects/ProjectFormDialog';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveOrg } from '@/lib/server/feature-flag';
 import { EmptyOrgPrompt } from '@/components/setup/EmptyOrgPrompt';
@@ -59,10 +59,7 @@ export async function RealProjectsList() {
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="gold" className="font-mono">Real DB</Badge>
-          <Button size="sm">
-            <Plus className="size-4" />
-            New project
-          </Button>
+          <NewProjectButton />
         </div>
       </div>
 

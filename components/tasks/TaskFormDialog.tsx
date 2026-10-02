@@ -32,12 +32,24 @@ import {
   type MockTaskStatus,
   type MockTaskType,
 } from '@/lib/mock/gbm';
+import type { BoardColor } from '@/lib/board';
 import { cn } from '@/lib/utils';
 
 const POINT_OPTIONS = [1, 2, 3, 5, 8, 13];
 const TYPES: MockTaskType[] = ['feature', 'bug', 'chore', 'spike', 'epic'];
 const PRIORITIES: MockTaskPriority[] = ['low', 'medium', 'high', 'critical'];
 const STATUSES: MockTaskStatus[] = ['todo', 'in_progress', 'in_review', 'blocked', 'done'];
+
+/** Option lists default to the GBM mocks; real screens pass their own. */
+export type TaskFormProject = { id: string; key: string; name: string };
+export type TaskFormSprint = {
+  id: string;
+  project_id: string;
+  name: string;
+  status: string;
+  sprint_number?: number;
+};
+export type TaskFormMember = { id: string; name: string; color: BoardColor; initials: string };
 
 export function TaskFormDialog({
   open,
@@ -46,6 +58,9 @@ export function TaskFormDialog({
   defaultProjectId,
   defaultSprintId,
   onSave,
+  projects = mockProjects,
+  sprints = mockSprints,
+  members,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -53,6 +68,10 @@ export function TaskFormDialog({
   defaultProjectId?: string;
   defaultSprintId?: string | null;
   onSave: (task: MockTask) => void;
+  projects?: TaskFormProject[];
+  sprints?: TaskFormSprint[];
+  /** When omitted, the mock project's own member list is used. */
+  members?: TaskFormMember[];
 }) {
   const editing = Boolean(initial);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +87,7 @@ export function TaskFormDialog({
   } = useForm<TaskFormValues, unknown, TaskCreateInput>({
     resolver: zodResolver(taskCreateSchema),
     defaultValues: {
-      project_id: initial?.project_id ?? defaultProjectId ?? mockProjects[0].id,
+      project_id: initial?.project_id ?? defaultProjectId ?? projects[0]?.id ?? '',
       sprint_id: initial?.sprint_id ?? defaultSprintId ?? null,
       title: initial?.title ?? '',
       description: initial?.description ?? '',
@@ -84,7 +103,7 @@ export function TaskFormDialog({
   useEffect(() => {
     if (open) {
       reset({
-        project_id: initial?.project_id ?? defaultProjectId ?? mockProjects[0].id,
+        project_id: initial?.project_id ?? defaultProjectId ?? projects[0]?.id ?? '',
         sprint_id: initial?.sprint_id ?? defaultSprintId ?? null,
         title: initial?.title ?? '',
         description: initial?.description ?? '',
@@ -97,12 +116,15 @@ export function TaskFormDialog({
       });
       setError(null);
     }
-  }, [open, initial, defaultProjectId, defaultSprintId, reset]);
+  }, [open, initial, defaultProjectId, defaultSprintId, projects, reset]);
 
   const projectId = watch('project_id');
-  const project = projectById(projectId);
-  const sprintsForProject = mockSprints.filter((s) => s.project_id === projectId);
-  const teamMembers = project?.members.map((id) => mockUsers.find((u) => u.id === id)!).filter(Boolean) ?? [];
+  const project = projects.find((p) => p.id === projectId);
+  const sprintsForProject = sprints.filter((s) => s.project_id === projectId);
+  const teamMembers: TaskFormMember[] =
+    members ??
+    projectById(projectId)?.members.map((id) => mockUsers.find((u) => u.id === id)!).filter(Boolean) ??
+    [];
   const watchType = watch('type');
   const watchPriority = watch('priority');
   const watchStatus = watch('status');
@@ -204,7 +226,10 @@ export function TaskFormDialog({
               <PillPicker
                 items={[
                   { value: '__backlog__', label: 'Backlog' },
-                  ...sprintsForProject.map((s) => ({ value: s.id, label: `#${s.sprint_number}` })),
+                  ...sprintsForProject.map((s) => ({
+                    value: s.id,
+                    label: s.sprint_number ? `#${s.sprint_number}` : s.name,
+                  })),
                 ]}
                 value={watchSprint ?? '__backlog__'}
                 onChange={(v) => setValue('sprint_id', v === '__backlog__' ? null : v)}
